@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use App\Services\Audit;
+use App\Support\PasswordConfirm;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -12,7 +13,7 @@ class SettingsController extends Controller
 {
     /** Settings every signed-in user needs (shop name on receipts, tax, currency…). */
     public const PUBLIC_KEYS = [
-        'shop_name', 'tagline', 'address', 'phone', 'email', 'tax_id', 'currency', 'tax_name', 'tax_rate', 'tax_inclusive',
+        'shop_name', 'tagline', 'address', 'phone', 'email', 'tax_id', 'currency', 'tax_name', 'tax_rate', 'tax_inclusive', 'tax_enabled',
         'invoice_prefix', 'invoice_footer', 'payment_methods', 'expense_categories', 'repair_types', 'terms',
         'expiring_days', 'warranty_start', 'repair_warranty_start', 'require_signature', 'costing', 'notify', 'channels',
     ];
@@ -24,6 +25,9 @@ class SettingsController extends Controller
 
     public function update(Request $request): JsonResponse
     {
+        if (! PasswordConfirm::confirmed($request)) {
+            return response()->json(['message' => 'Please confirm your password to change settings.', 'confirm_password' => true], 403);
+        }
         $data = $request->validate([
             'shop_name' => ['sometimes', 'string', 'max:120'],
             'tagline' => ['sometimes', 'nullable', 'string', 'max:160'],
@@ -35,6 +39,7 @@ class SettingsController extends Controller
             'tax_name' => ['sometimes', 'string', 'max:20'],
             'tax_rate' => ['sometimes', 'numeric', 'min:0', 'max:100'],
             'tax_inclusive' => ['sometimes', 'boolean'],
+            'tax_enabled' => ['sometimes', 'boolean'],
             'invoice_prefix' => ['sometimes', 'string', 'max:10', 'regex:/^[A-Z0-9-]+$/i'],
             'invoice_footer' => ['sometimes', 'nullable', 'string', 'max:1000'],
             'costing' => ['sometimes', 'string', 'max:255'],

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\Audit;
+use App\Support\PasswordConfirm;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -55,6 +56,20 @@ class AuthController extends Controller
         Audit::log('users', 'Signed out', $request->user()->name.' signed out');
 
         return response()->json(['message' => 'Signed out.']);
+    }
+
+    /** Re-enter your password before opening a protected screen (Settings). */
+    public function confirmPassword(Request $request): JsonResponse
+    {
+        $data = $request->validate(['password' => ['required', 'string', 'max:200']]);
+        if (! Hash::check($data['password'], $request->user()->password)) {
+            Audit::log('users', 'Password confirmation failed', $request->user()->name.' entered a wrong password to open Settings');
+
+            return response()->json(['message' => 'Incorrect password.', 'errors' => ['password' => ['Incorrect password.']]], 422);
+        }
+        PasswordConfirm::remember($request);
+
+        return response()->json(['confirmed' => true, 'minutes' => PasswordConfirm::MINUTES]);
     }
 
     public function changePassword(Request $request): JsonResponse

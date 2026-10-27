@@ -325,12 +325,12 @@ function invoiceDoc(s) {
       <td class="num">${it.qty}</td><td class="num">${money(it.price)}</td><td class="num">${it.discount ? money(it.discount) : '—'}</td><td class="num">${money(it.lineTotal)}</td></tr>`;
   }).join('');
   const pays = s.payments.map((p) => `<tr><td>${fmtDateTime(p.at)}</td><td>${h(p.method)}${p.ref ? ' · ' + h(p.ref) : ''}</td><td class="num">${money(p.amount)}</td></tr>`).join('');
-  return `${docHeader('Tax Invoice', `<div class="mono"><b>${h(s.no)}</b></div><div>${fmtDateTime(s.at)}</div><div class="muted">Served by ${h(userName(s.userId))}</div>${s.status !== 'completed' ? `<div class="stamp bad">${h(TONES.sale[s.status][0])}</div>` : ''}`)}
+  return `${docHeader(showVat(s) ? 'Tax Invoice' : 'Invoice', `<div class="mono"><b>${h(s.no)}</b></div><div>${fmtDateTime(s.at)}</div><div class="muted">Served by ${h(userName(s.userId))}</div>${s.status !== 'completed' ? `<div class="stamp bad">${h(TONES.sale[s.status][0])}</div>` : ''}`)}
     <div class="grid2">${docCustomer(s.customerId)}<div class="box"><h4>Payment status</h4><div class="big ${t.balance > 0 ? 'bad' : 'ok'}">${t.balance > 0 ? 'Balance ' + money(t.balance) : 'PAID'}</div><div class="muted">Paid ${money(t.paid)} of ${money(t.net)}</div></div></div>
     <table><thead><tr><th>#</th><th>Item</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Disc.</th><th class="num">Amount</th></tr></thead><tbody>${rows}</tbody></table>
     ${(s.replacements || []).length ? `<div class="box" style="margin-bottom:8px"><h4>Warranty replacements</h4>${s.replacements.map((x) => `${fmtDate(isoDate(new Date(x.at)))}: defective <span class="mono">${h(x.oldCode)}</span> replaced by <span class="mono">${h(x.newCode)}</span> (${h(x.no)}, warranty ${h(x.warrantyNo)})`).join('<br>')}</div>` : ''}
-    <table class="totals"><tr><td>Subtotal</td><td class="num">${money(s.subtotal)}</td></tr>${s.discount ? `<tr><td>Invoice discount</td><td class="num">−${money(s.discount)}</td></tr>` : ''}
-      <tr><td>${h(db.settings.taxName)} ${db.settings.taxRate}% ${s.taxInclusive ? '(included)' : ''}</td><td class="num">${money(s.tax)}</td></tr>
+    <table class="totals"><tr><td>Subtotal</td><td class="num">${money(s.subtotal)}</td></tr>${s.discount ? `<tr><td>${discountLabel(s)}</td><td class="num">−${money(s.discount)}</td></tr>` : ''}
+      ${showVat(s) ? `<tr><td>${h(db.settings.taxName)} ${pctText(vatRateOf(s))} ${s.taxInclusive ? '(included)' : ''}</td><td class="num">${money(s.tax)}</td></tr>` : ''}
       ${t.returned ? `<tr><td>Returns</td><td class="num">−${money(t.returned)}</td></tr>` : ''}
       <tr class="grand"><td>Total</td><td class="num">${money(t.net)}</td></tr>${s.change ? `<tr><td>Change given</td><td class="num">${money(s.change)}</td></tr>` : ''}</table>
     <h2>Payments</h2><table><thead><tr><th>Date</th><th>Method</th><th class="num">Amount</th></tr></thead><tbody>${pays || '<tr><td colspan="3" class="muted">No payments</td></tr>'}</tbody></table>
@@ -342,7 +342,7 @@ function quoteDoc(q) {
   return `${docHeader('Quotation', `<div class="mono"><b>${h(q.no)}</b></div><div>${fmtDate(q.date)}</div><div class="muted">Valid until ${fmtDate(q.validUntil)}</div>`)}
     <div class="grid2">${docCustomer(q.customerId)}<div class="box"><h4>Prepared by</h4>${h(userName(q.userId))}${q.note ? `<div class="muted">${h(q.note)}</div>` : ''}</div></div>
     <table><thead><tr><th>#</th><th>Item</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Amount</th></tr></thead><tbody>${rows}</tbody></table>
-    <table class="totals"><tr><td>Subtotal</td><td class="num">${money(q.subtotal)}</td></tr>${q.discount ? `<tr><td>Discount</td><td class="num">−${money(q.discount)}</td></tr>` : ''}<tr><td>${h(db.settings.taxName)} ${db.settings.taxInclusive ? '(included)' : ''}</td><td class="num">${money(q.tax)}</td></tr><tr class="grand"><td>Total</td><td class="num">${money(q.total)}</td></tr></table>
+    <table class="totals"><tr><td>Subtotal</td><td class="num">${money(q.subtotal)}</td></tr>${q.discount ? `<tr><td>${discountLabel(q)}</td><td class="num">−${money(q.discount)}</td></tr>` : ''}${showVat(q) ? `<tr><td>${h(db.settings.taxName)} ${pctText(vatRateOf(q))} ${db.settings.taxInclusive ? '(included)' : ''}</td><td class="num">${money(q.tax)}</td></tr>` : ''}<tr class="grand"><td>Total</td><td class="num">${money(q.total)}</td></tr></table>
     <div class="terms">Prices and availability are valid until ${fmtDate(q.validUntil)}. This is not a tax invoice.</div>`;
 }
 function warrantyDoc(w) {

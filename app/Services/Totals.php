@@ -14,10 +14,12 @@ final class Totals
     /**
      * Cart maths shared by POS sales and quotations.
      * $lines: [['product_id','qty','price','discount'], …] → adds line_total and tax to each line.
+     * $discountPct (0–100), when given, replaces $orderDiscount with that share of the subtotal.
      */
-    public static function cart(array &$lines, float $orderDiscount): array
+    public static function cart(array &$lines, float $orderDiscount, ?float $discountPct = null): array
     {
-        $rate = (float) Shop::setting('tax_rate', 0) / 100;
+        $vatOn = (bool) Shop::setting('tax_enabled', true);
+        $rate = $vatOn ? (float) Shop::setting('tax_rate', 0) / 100 : 0.0;
         $inclusive = (bool) Shop::setting('tax_inclusive', true);
         $taxable = Product::whereIn('id', array_column($lines, 'product_id'))->pluck('taxable', 'id');
 
@@ -28,7 +30,8 @@ final class Totals
         }
         unset($l);
         $subtotal = Shop::money($subtotal);
-        $disc = Shop::money(min(max(0, $orderDiscount), $subtotal));
+        $pct = $discountPct > 0 ? min(100.0, (float) $discountPct) : null;
+        $disc = Shop::money($pct ? $subtotal * $pct / 100 : min(max(0, $orderDiscount), $subtotal));
 
         $tax = 0.0;
         foreach ($lines as &$l) {
@@ -41,7 +44,7 @@ final class Totals
         $tax = Shop::money($tax);
 
         return [
-            'subtotal' => $subtotal, 'discount' => $disc, 'tax' => $tax, 'tax_inclusive' => $inclusive,
+            'subtotal' => $subtotal, 'discount' => $disc, 'discount_percent' => $pct, 'tax' => $tax, 'tax_rate' => $rate * 100, 'tax_inclusive' => $inclusive,
             'total' => Shop::money($inclusive ? $subtotal - $disc : $subtotal - $disc + $tax),
         ];
     }

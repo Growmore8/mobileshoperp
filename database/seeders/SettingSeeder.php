@@ -20,6 +20,7 @@ class SettingSeeder extends Seeder
             'tax_name' => 'VAT',
             'tax_rate' => 8,
             'tax_inclusive' => true,
+            'tax_enabled' => true,
             'invoice_prefix' => 'INV-',
             'invoice_footer' => 'Thank you for shopping with us! Returns accepted within 7 days with the original invoice and packaging, subject to inspection.',
             'costing' => 'Serialised devices: actual purchase cost per IMEI. Quantity items: weighted average cost.',

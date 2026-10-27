@@ -30,6 +30,7 @@ Route::middleware(['auth:sanctum', 'active', 'throttle:api'])->group(function ()
     Route::post('demo/reset', [AuthController::class, 'resetDemo']); // only when SHOP_DEMO=true, admins only
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::post('auth/password', [AuthController::class, 'changePassword']);
+    Route::post('auth/confirm-password', [AuthController::class, 'confirmPassword'])->middleware('throttle:6,1');
 
     // Settings
     Route::get('settings', [SettingsController::class, 'show'])->middleware('perm:settings,view');

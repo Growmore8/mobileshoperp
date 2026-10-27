@@ -46,7 +46,7 @@ class DocumentController extends Controller
             ->when(! Shop::can('sales', 'manage'), fn ($q) => $q->where('user_id', Auth::id()))->findOrFail($id);
         $status = $sale->status !== 'completed' ? strtoupper(str_replace('_', ' ', $sale->status)) : '';
 
-        return $this->pdf('invoice', $sale->no, 'Tax Invoice', self::meta($sale->no, $sale->created_at->format('d M Y, H:i'), 'Served by '.$sale->user?->name, $status), [
+        return $this->pdf('invoice', $sale->no, ($sale->tax > 0 || ($sale->tax_rate ?? Shop::setting('tax_rate', 0)) > 0) ? 'Tax Invoice' : 'Invoice', self::meta($sale->no, $sale->created_at->format('d M Y, H:i'), 'Served by '.$sale->user?->name, $status), [
             'sale' => $sale, 't' => Totals::sale($sale), 'replacements' => Replacement::where('sale_id', $sale->id)->get(),
         ]);
     }

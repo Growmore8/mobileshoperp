@@ -318,13 +318,21 @@ function visibleSales() {
 }
 
 /* ---------------- Services ---------------- */
-function calcCart(items, orderDiscount = 0) {
-  const rate = (Number(db.settings.taxRate) || 0) / 100;
+/* VAT shown on a sale / quotation: the rate it was billed at (older records fall back to the current setting) */
+function vatRateOf(doc) { return doc.taxRate ?? (Number(db.settings.taxRate) || 0); }
+function showVat(doc) { return doc.tax > 0 || vatRateOf(doc) > 0; }
+function pctText(v) { return `${Number((Number(v) || 0).toFixed(2))}%`; }
+function discountLabel(doc, base = 'Discount') { return doc.discountPercent ? `${base} (${pctText(doc.discountPercent)} off)` : base; }
+function vatOn() { return db.settings.taxEnabled !== false; }
+
+function calcCart(items, orderDiscount = 0, discountPct = 0) {
+  const rate = vatOn() ? (Number(db.settings.taxRate) || 0) / 100 : 0;
   const inclusive = db.settings.taxInclusive;
   let subtotal = 0;
   items.forEach((it) => { it.lineTotal = round2(it.price * it.qty - (Number(it.discount) || 0)); subtotal += it.lineTotal; });
   subtotal = round2(subtotal);
-  const disc = round2(Math.min(Math.max(0, Number(orderDiscount) || 0), subtotal));
+  const pct = Math.min(100, Math.max(0, Number(discountPct) || 0));
+  const disc = round2(pct ? subtotal * pct / 100 : Math.min(Math.max(0, Number(orderDiscount) || 0), subtotal));
   let tax = 0;
   items.forEach((it) => {
     const p = find('products', it.productId);
@@ -388,16 +396,16 @@ const svc = {
   async rejectAdjustment(id, note) { await api('POST', `/adjustments/${id}/reject`, { note: nn(note) }); return refreshAfter(); },
 
   /* ----- Sales ----- */
-  async createSale({ customerId, items, discount = 0, payments = [], note = '', allowCredit = false }) {
+  async createSale({ customerId, items, discount = 0, discountPercent = 0, payments = [], note = '', allowCredit = false }) {
     const r = await api('POST', '/sales', {
-      customer_id: nn(customerId), discount: Number(discount) || 0, note: nn(note), allow_credit: !!allowCredit,
+      customer_id: nn(customerId), discount: Number(discount) || 0, discount_percent: Number(discountPercent) || 0, note: nn(note), allow_credit: !!allowCredit,
       items: items.map((i) => ({ product_id: i.productId, device_id: nn(i.deviceId), qty: Number(i.qty), price: Number(i.price), discount: Number(i.discount) || 0, warranty_months: i.deviceId ? num(i.warrantyMonths) : null })),
       payments: payments.filter((p) => Number(p.amount) > 0).map((p) => ({ method: p.method, amount: Number(p.amount), reference: nn(p.ref) })),
     });
     return refreshAfter('sales', r.data.id);
   },
-  async saveQuote({ customerId, items, discount = 0, note = '' }) {
-    const r = await api('POST', '/quotations', { customer_id: nn(customerId), discount: Number(discount) || 0, note: nn(note),
+  async saveQuote({ customerId, items, discount = 0, discountPercent = 0, note = '' }) {
+    const r = await api('POST', '/quotations', { customer_id: nn(customerId), discount: Number(discount) || 0, discount_percent: Number(discountPercent) || 0, note: nn(note),
       items: items.map((i) => ({ product_id: i.productId, qty: Number(i.qty), price: Number(i.price), discount: Number(i.discount) || 0 })) });
     return refreshAfter('quotes', r.data.id);
   },
@@ -490,7 +498,7 @@ const svc = {
   async saveCategoryWarranty(id, months) { await api('PUT', `/categories/${id}`, { warranty_months: Number(months) || 0 }); },
   async saveSettings(p) {
     const keys = { shopName: 'shop_name', tagline: 'tagline', address: 'address', phone: 'phone', email: 'email', taxId: 'tax_id', currency: 'currency', taxName: 'tax_name',
-      taxRate: 'tax_rate', taxInclusive: 'tax_inclusive', invoicePrefix: 'invoice_prefix', invoiceFooter: 'invoice_footer', costing: 'costing', paymentMethods: 'payment_methods',
+      taxRate: 'tax_rate', taxInclusive: 'tax_inclusive', taxEnabled: 'tax_enabled', invoicePrefix: 'invoice_prefix', invoiceFooter: 'invoice_footer', costing: 'costing', paymentMethods: 'payment_methods',
       expenseCategories: 'expense_categories', warrantyStart: 'warranty_start', repairWarrantyStart: 'repair_warranty_start', expiringDays: 'expiring_days', requireSignature: 'require_signature' };
     const body = {};
     Object.entries(p).forEach(([k, v]) => { if (keys[k]) body[keys[k]] = v; });

@@ -52,6 +52,38 @@ class SalesTest extends ShopTestCase
         $this->assertNull($sale2['items'][0]['warranty_id']);
     }
 
+    public function test_percentage_discount_and_vat_switch(): void
+    {
+        $this->receiveStock(3);
+        $this->as($this->manager);
+        $sell = fn (array $extra) => $this->postJson('/api/sales', $extra + ['items' => [['product_id' => $this->phone->id, 'device_id' => $this->inStockDevice()->id, 'qty' => 1, 'warranty_months' => 12]],
+            'payments' => [['method' => 'Cash', 'amount' => 17999]]])->assertCreated()->json('data');
+
+        // 10% off a Rs. 17,999 phone; VAT on (8% inclusive) — the sale keeps the rate it was billed at
+        $s = $sell(['discount_percent' => 10]);
+        $this->assertEquals(1799.9, $s['discount']);
+        $this->assertEquals(10, $s['discount_percent']);
+        $this->assertEquals(16199.1, $s['total']);
+        $this->assertEquals(8, $s['tax_rate']);
+        $this->assertGreaterThan(0, $s['tax']);
+
+        // VAT switched off: nothing charged, rate recorded as 0, older invoice unchanged
+        \App\Models\Setting::put('tax_enabled', false);
+        $s2 = $sell(['discount' => 999]);
+        $this->assertEquals(0, $s2['tax']);
+        $this->assertEquals(0, $s2['tax_rate']);
+        $this->assertNull($s2['discount_percent']);
+        $this->assertEquals(17000, $s2['total']);
+        $this->assertEquals(8, Sale::where('no', $s['no'])->value('tax_rate'));
+        $this->get("/api/documents/invoice/{$s2['id']}")->assertOk();
+
+        // percentage discounts follow the same POS permission as amount discounts
+        $this->as($this->sales);
+        $this->postJson('/api/sales', ['discount_percent' => 5, 'items' => [['product_id' => $this->phone->id, 'device_id' => $this->inStockDevice()->id, 'qty' => 1, 'warranty_months' => 12]],
+            'payments' => [['method' => 'Cash', 'amount' => 17999]]])->assertStatus(403);
+        $this->postJson('/api/sales', ['discount_percent' => 150, 'items' => []])->assertStatus(422);
+    }
+
     public function test_sale_guards(): void
     {
         $this->receiveStock(1);

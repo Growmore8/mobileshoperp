@@ -106,7 +106,13 @@ class AccessControlTest extends TestCase
 
     public function test_settings_update_validates_and_logs_changed_keys(): void
     {
-        Sanctum::actingAs(User::where('username', 'admin')->first());
+        $admin = User::where('username', 'admin')->first();
+        $admin->update(['password' => 'owner-pass-2026']);
+        Sanctum::actingAs($admin);
+        // Settings need the password re-entered first
+        $this->putJson('/api/settings', ['tax_rate' => 5])->assertStatus(403)->assertJsonPath('confirm_password', true);
+        $this->postJson('/api/auth/confirm-password', ['password' => 'wrong'])->assertStatus(422);
+        $this->postJson('/api/auth/confirm-password', ['password' => 'owner-pass-2026'])->assertOk();
         $this->putJson('/api/settings', ['tax_rate' => 150])->assertStatus(422);
         $this->putJson('/api/settings', ['shop_name' => 'Singtel Mobile', 'tax_rate' => 5])
             ->assertOk()->assertJsonPath('changed', ['tax_rate'])->assertJsonPath('settings.tax_rate', 5);

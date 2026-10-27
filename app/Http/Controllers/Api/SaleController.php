@@ -57,7 +57,7 @@ class SaleController extends Controller
     public function store(Request $request): JsonResponse
     {
         $d = $request->validate([
-            'customer_id' => 'nullable|exists:customers,id', 'discount' => 'nullable|numeric|min:0', 'note' => 'nullable|string|max:500', 'allow_credit' => 'boolean',
+            'customer_id' => 'nullable|exists:customers,id', 'discount' => 'nullable|numeric|min:0', 'discount_percent' => 'nullable|numeric|min:0|max:100', 'note' => 'nullable|string|max:500', 'allow_credit' => 'boolean',
             'items' => 'required|array|min:1', 'items.*.product_id' => 'required|integer', 'items.*.device_id' => 'nullable|integer',
             'items.*.qty' => 'required|integer|min:1', 'items.*.price' => 'nullable|numeric|min:0', 'items.*.discount' => 'nullable|numeric|min:0', 'items.*.warranty_months' => 'nullable|integer|min:0|max:60',
             'payments' => 'array', 'payments.*.method' => 'required|string|max:30', 'payments.*.amount' => 'required|numeric|min:0', 'payments.*.reference' => 'nullable|string|max:80',
@@ -95,7 +95,7 @@ class SaleController extends Controller
 
     public function storeQuotation(Request $request): JsonResponse
     {
-        $d = $request->validate(['customer_id' => 'nullable|exists:customers,id', 'discount' => 'nullable|numeric|min:0', 'note' => 'nullable|string|max:500',
+        $d = $request->validate(['customer_id' => 'nullable|exists:customers,id', 'discount' => 'nullable|numeric|min:0', 'discount_percent' => 'nullable|numeric|min:0|max:100', 'note' => 'nullable|string|max:500',
             'items' => 'required|array|min:1', 'items.*.product_id' => 'required|exists:products,id', 'items.*.qty' => 'required|integer|min:1', 'items.*.price' => 'required|numeric|min:0', 'items.*.discount' => 'nullable|numeric|min:0']);
 
         return response()->json(['data' => SaleService::quote($d)->load('items')], 201);

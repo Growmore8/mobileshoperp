@@ -10,8 +10,9 @@
 </table>
 <table class="totals">
   <tr><td>Subtotal</td><td class="num">{{ $money($q->subtotal) }}</td></tr>
-  @if($q->discount > 0)<tr><td>Discount</td><td class="num">−{{ $money($q->discount) }}</td></tr>@endif
-  <tr><td>{{ $settings['tax_name'] ?? 'Tax' }} {{ !empty($settings['tax_inclusive']) ? '(included)' : '' }}</td><td class="num">{{ $money($q->tax) }}</td></tr>
+  @if($q->discount > 0)<tr><td>Discount{{ $q->discount_percent ? ' ('.rtrim(rtrim(number_format((float) $q->discount_percent, 2), '0'), '.').'% off)' : '' }}</td><td class="num">−{{ $money($q->discount) }}</td></tr>@endif
+  @php($vatRate = $q->tax_rate ?? ($settings['tax_rate'] ?? 0))
+  @if($q->tax > 0 || $vatRate > 0)<tr><td>{{ $settings['tax_name'] ?? 'Tax' }} {{ rtrim(rtrim(number_format((float) $vatRate, 2), '0'), '.') }}% {{ !empty($settings['tax_inclusive']) ? '(included)' : '' }}</td><td class="num">{{ $money($q->tax) }}</td></tr>@endif
   <tr class="grand"><td>Total</td><td class="num">{{ $money($q->total) }}</td></tr>
 </table>
 <div class="terms">Prices and availability are valid until {{ $q->valid_until->format('d M Y') }}. This is not a tax invoice.</div>

@@ -1,7 +1,7 @@
 /* POS, sales & invoices, quotations, customers */
 'use strict';
 
-const POS = { items: [], customerId: '', discount: 0, cat: '', q: '' };
+const POS = { items: [], customerId: '', discount: 0, discountPct: 0, discMode: 'amt', cat: '', q: '' };
 
 /* ---------------- Shared: customer form ---------------- */
 function openCustomerForm(c, onSaved) {
@@ -124,7 +124,8 @@ function posPickDevice(p, replaceKey) {
     },
   });
 }
-function posTotals() { return calcCart(POS.items.map((i) => ({ ...i })), POS.discount); }
+function posTotals() { return calcCart(POS.items.map((i) => ({ ...i })), POS.discount, POS.discountPct); }
+function posResetDiscount() { POS.discount = 0; POS.discountPct = 0; POS.discMode = 'amt'; }
 function posCart() {
   const el = $('#pos-cart'); if (!el) return;
   const t = posTotals();
@@ -148,8 +149,11 @@ function posCart() {
     <div class="cart-items">${items || emptyState('cart', 'Cart is empty', 'Tap a product or scan a barcode / IMEI.')}</div>
     <div class="cart-totals">
       <div class="row"><span class="muted">Subtotal (${sum(POS.items, (i) => i.qty)} items)</span><span>${money(t.subtotal)}</span></div>
-      <div class="row" style="align-items:center"><span class="muted">Discount</span>${edit ? `<input class="input input-sm" style="width:110px;text-align:right" id="pos-disc" value="${POS.discount || ''}" placeholder="0" inputmode="decimal" aria-label="Invoice discount">` : `<span>${money(t.discount)}</span>`}</div>
-      <div class="row"><span class="muted">${h(db.settings.taxName)} ${db.settings.taxRate}%${db.settings.taxInclusive ? ' (incl.)' : ''}</span><span>${money(t.tax)}</span></div>
+      <div class="row" style="align-items:center"><span class="muted">${POS.discountPct ? `Discount (${pctText(POS.discountPct)} off)` : 'Discount'}</span>${edit ? `<div class="flex" style="gap:6px">
+        <div class="seg" role="group" aria-label="Discount type"><button type="button" class="${POS.discMode === 'amt' ? 'active' : ''}" data-action="pos-disc-mode" data-mode="amt" aria-pressed="${POS.discMode === 'amt'}">${h(db.settings.currency)}</button><button type="button" class="${POS.discMode === 'pct' ? 'active' : ''}" data-action="pos-disc-mode" data-mode="pct" aria-pressed="${POS.discMode === 'pct'}">%</button></div>
+        <input class="input input-sm" style="width:90px;text-align:right" id="pos-disc" value="${(POS.discMode === 'pct' ? POS.discountPct : POS.discount) || ''}" placeholder="0" inputmode="decimal" aria-label="${POS.discMode === 'pct' ? 'Discount percentage' : 'Discount amount'}"></div>` : `<span>${money(t.discount)}</span>`}</div>
+      ${POS.discountPct && t.discount ? `<div class="row xs"><span class="muted">Customer saves</span><span class="success-text">−${money(t.discount)}</span></div>` : ''}
+      ${vatOn() ? `<div class="row"><span class="muted">${h(db.settings.taxName)} ${pctText(db.settings.taxRate)}${db.settings.taxInclusive ? ' (incl.)' : ''}</span><span>${money(t.tax)}</span></div>` : ''}
       <div class="row total"><span>Total</span><span>${money(t.total)}</span></div>
     </div>
     <div class="cart-actions">
@@ -161,7 +165,15 @@ function posCart() {
   if (fab) fab.innerHTML = `<span class="flex">${icon('cart')} Cart (${sum(POS.items, (i) => i.qty)})</span><span>${money(t.total)} ${icon('chevronRight', 'ic-sm')}</span>`;
   $('#pos-cust').addEventListener('change', (e) => { POS.customerId = e.target.value; posCart(); });
   const disc = $('#pos-disc');
-  if (disc) disc.addEventListener('change', () => { const v = Number(disc.value) || 0; if (v < 0) { toast('Discount cannot be negative.', 'error'); return; } POS.discount = Math.min(v, t.subtotal); posCart(); });
+  if (disc) disc.addEventListener('change', () => {
+    const v = Number(disc.value) || 0;
+    if (v < 0) { toast('Discount cannot be negative.', 'error'); return; }
+    if (POS.discMode === 'pct') {
+      if (v > 100) { toast('A percentage discount cannot be more than 100%.', 'error'); return; }
+      POS.discountPct = v; POS.discount = 0;
+    } else { POS.discount = Math.min(v, t.subtotal); POS.discountPct = 0; }
+    posCart();
+  });
   $$('[data-pos-price]', el).forEach((inp) => inp.addEventListener('change', () => {
     const ln = POS.items.find((i) => i.key === inp.dataset.posPrice); const p = find('products', ln.productId);
     const v = Number(inp.value);
@@ -193,12 +205,13 @@ Object.assign(ACT, {
     posCart(); posGrid();
   },
   'pos-change-dev': (el) => { const ln = POS.items.find((i) => i.key === el.dataset.key); posPickDevice(find('products', ln.productId), ln.key); },
-  'pos-clear': async () => { const ok = await confirmDialog({ title: 'Clear cart?', message: 'All items will be removed from the current sale.', confirmText: 'Clear cart', danger: true }); if (ok) { POS.items = []; POS.discount = 0; posCart(); posGrid(); } },
+  'pos-clear': async () => { const ok = await confirmDialog({ title: 'Clear cart?', message: 'All items will be removed from the current sale.', confirmText: 'Clear cart', danger: true }); if (ok) { POS.items = []; posResetDiscount(); posCart(); posGrid(); } },
+  'pos-disc-mode': (b) => { if (POS.discMode === b.dataset.mode) return; POS.discMode = b.dataset.mode; POS.discount = 0; POS.discountPct = 0; posCart(); const i = $('#pos-disc'); if (i) i.focus(); },
   'pos-cart-open': () => $('#pos').classList.add('show-cart'),
   'pos-cart-close': () => $('#pos').classList.remove('show-cart'),
   'pos-new-cust': () => openCustomerForm(null, (c) => { POS.customerId = c.id; posCart(); }),
   'pos-quote': async () => {
-    const q = await svc.saveQuote({ customerId: POS.customerId, items: POS.items, discount: POS.discount });
+    const q = await svc.saveQuote({ customerId: POS.customerId, items: POS.items, discount: POS.discount, discountPercent: POS.discountPct });
     toast(`Quotation ${q.no} saved.`);
     openModal({ title: `Quotation ${h(q.no)}`, size: 'sm', body: `<p>Quotation for <b>${h(customerName(q.customerId))}</b> totalling <b>${money(q.total)}</b> is valid until ${fmtDate(q.validUntil)}.</p><p class="muted small">The cart was kept so you can still complete the sale.</p>`,
       foot: `<button class="btn" data-dismiss>Close</button>${can('pos', 'print') ? `<button class="btn btn-primary" id="q-print">${icon('printer')} Print / PDF</button>` : ''}`,
@@ -271,9 +284,9 @@ function posCheckout() {
       draw();
       bindForm($('#pay-form', el), async () => {
         POS.customerId = $('#pay-cust', el).value;
-        const s = await svc.createSale({ customerId: POS.customerId, items: POS.items, discount: POS.discount, payments: rows, allowCredit: $('#pay-credit', el).checked });
+        const s = await svc.createSale({ customerId: POS.customerId, items: POS.items, discount: POS.discount, discountPercent: POS.discountPct, payments: rows, allowCredit: $('#pay-credit', el).checked });
         m.close();
-        POS.items = []; POS.discount = 0; POS.customerId = ''; POS.q = ''; POS.warnWarranty = false;
+        POS.items = []; posResetDiscount(); POS.customerId = ''; POS.q = ''; POS.warnWarranty = false;
         if ($('#pos')) { $('#pos').classList.remove('show-cart'); posCart(); posGrid(); }
         updateChrome();
         saleDone(s);
@@ -376,7 +389,8 @@ Object.assign(ACT, {
         }
       } else items.push({ key: uid('ln'), productId: p.id, qty: Math.min(it.qty, p.qty), price: it.price, discount: 0 });
     });
-    POS.items = items; POS.customerId = q.customerId || ''; POS.discount = q.discount || 0;
+    POS.items = items; POS.customerId = q.customerId || '';
+    if (q.discountPercent) { POS.discountPct = q.discountPercent; POS.discount = 0; POS.discMode = 'pct'; } else { POS.discount = q.discount || 0; POS.discountPct = 0; POS.discMode = 'amt'; }
     toast(missing ? `${missing} unit(s) not in stock were skipped. IMEIs were auto-selected — tap “Change” to pick others.` : 'Quotation loaded. IMEIs were auto-selected (oldest stock first).', missing ? 'warning' : 'success', 5000);
     location.hash = '#/pos';
   },
@@ -414,8 +428,8 @@ function saleDetail(id) {
       </div>
       <div class="stack">
         <div class="card"><div class="card-head"><h3>Summary</h3></div><div class="card-body"><dl class="dl">
-          <dt>Subtotal</dt><dd class="right">${money(s.subtotal)}</dd><dt>Discount</dt><dd class="right">−${money(s.discount)}</dd>
-          <dt>${h(db.settings.taxName)} ${s.taxInclusive ? '(incl.)' : ''}</dt><dd class="right">${money(s.tax)}</dd>
+          <dt>Subtotal</dt><dd class="right">${money(s.subtotal)}</dd><dt>${discountLabel(s)}</dt><dd class="right">−${money(s.discount)}</dd>
+          ${showVat(s) ? `<dt>${h(db.settings.taxName)} ${pctText(vatRateOf(s))} ${s.taxInclusive ? '(incl.)' : ''}</dt><dd class="right">${money(s.tax)}</dd>` : ''}
           ${t.returned ? `<dt>Returns</dt><dd class="right">−${money(t.returned)}</dd>` : ''}
           <dt><b>Net total</b></dt><dd class="right"><b>${money(t.net)}</b></dd><dt>Paid</dt><dd class="right">${money(t.paid)}</dd>
           <dt><b>Balance</b></dt><dd class="right ${t.balance > 0 ? 'danger-text' : ''}"><b>${money(t.balance)}</b></dd>

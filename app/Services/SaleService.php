@@ -79,10 +79,11 @@ class SaleService
                 $warrantyChoice[] = $device ? (int) $it['warranty_months'] : null;
             }
             $orderDiscount = Shop::money($d['discount'] ?? 0);
-            if ($orderDiscount > 0 && ! $canEditPrice) {
+            $discountPct = (float) ($d['discount_percent'] ?? 0);
+            if (($orderDiscount > 0 || $discountPct > 0) && ! $canEditPrice) {
                 Shop::fail('You are not allowed to apply invoice discounts.', 403);
             }
-            $t = Totals::cart($lines, $orderDiscount);
+            $t = Totals::cart($lines, $orderDiscount, $discountPct);
 
             // payments: over-payment only in cash (change), short payment only with a customer + explicit credit
             $pays = collect($d['payments'] ?? [])->filter(fn ($p) => (float) $p['amount'] > 0)->map(fn ($p) => ['method' => $p['method'], 'amount' => Shop::money($p['amount']), 'reference' => $p['reference'] ?? null])->values()->all();
@@ -148,7 +149,7 @@ class SaleService
                 'product_id' => $it['product_id'], 'qty' => (int) $it['qty'], 'price' => Shop::money($it['price']), 'discount' => Shop::money($it['discount'] ?? 0),
                 'name' => Product::findOrFail($it['product_id'])->name,
             ])->all();
-            $t = Totals::cart($lines, (float) ($d['discount'] ?? 0));
+            $t = Totals::cart($lines, (float) ($d['discount'] ?? 0), (float) ($d['discount_percent'] ?? 0));
             unset($t['tax_inclusive']);
             $q = Quotation::create(['no' => DocNumber::next('quote', 'QT-'), 'date' => Carbon::today(), 'valid_until' => Carbon::today()->addDays(7),
                 'customer_id' => $d['customer_id'] ?? null, 'user_id' => Auth::id(), 'note' => $d['note'] ?? null] + $t);

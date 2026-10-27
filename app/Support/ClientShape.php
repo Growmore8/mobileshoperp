@@ -70,7 +70,7 @@ final class ClientShape
         return [
             'shopName' => $s['shop_name'] ?? '', 'tagline' => $s['tagline'] ?? '', 'address' => $s['address'] ?? '', 'phone' => $s['phone'] ?? '',
             'email' => $s['email'] ?? '', 'taxId' => $s['tax_id'] ?? '', 'currency' => $s['currency'] ?? 'Rs.', 'taxName' => $s['tax_name'] ?? 'Tax',
-            'taxRate' => (float) ($s['tax_rate'] ?? 0), 'taxInclusive' => (bool) ($s['tax_inclusive'] ?? true), 'invoicePrefix' => $s['invoice_prefix'] ?? 'INV-',
+            'taxRate' => (float) ($s['tax_rate'] ?? 0), 'taxInclusive' => (bool) ($s['tax_inclusive'] ?? true), 'taxEnabled' => (bool) ($s['tax_enabled'] ?? true), 'invoicePrefix' => $s['invoice_prefix'] ?? 'INV-',
             'invoiceFooter' => $s['invoice_footer'] ?? '', 'costing' => $s['costing'] ?? '', 'warrantyStart' => $s['warranty_start'] ?? 'sale',
             'repairWarrantyStart' => $s['repair_warranty_start'] ?? 'delivery', 'expiringDays' => (int) ($s['expiring_days'] ?? 30),
             'requireSignature' => (bool) ($s['require_signature'] ?? true), 'paymentMethods' => $s['payment_methods'] ?? ['Cash'],
@@ -167,7 +167,8 @@ final class ClientShape
     {
         return [
             'id' => self::id($s->id), 'no' => $s->no, 'date' => self::day($s->date), 'at' => self::ts($s->created_at), 'userId' => self::id($s->user_id),
-            'customerId' => self::id($s->customer_id), 'subtotal' => $s->subtotal, 'discount' => $s->discount, 'tax' => $s->tax, 'total' => $s->total,
+            'customerId' => self::id($s->customer_id), 'subtotal' => $s->subtotal, 'discount' => $s->discount, 'discountPercent' => $s->discount_percent === null ? null : (float) $s->discount_percent,
+            'tax' => $s->tax, 'taxRate' => $s->tax_rate === null ? null : (float) $s->tax_rate, 'total' => $s->total,
             'taxInclusive' => $s->tax_inclusive, 'change' => $s->change_given, 'note' => $s->note ?? '', 'status' => $s->status,
             'cancelReason' => $s->cancel_reason, 'cancelledBy' => self::id($s->cancelled_by), 'cancelledAt' => self::ts($s->cancelled_at),
             'items' => $s->items->map(fn ($i) => $this->cost(['id' => self::id($i->id), 'productId' => self::id($i->product_id), 'deviceId' => self::id($i->device_id),
@@ -185,7 +186,8 @@ final class ClientShape
     public function quote(Quotation $q): array
     {
         return ['id' => self::id($q->id), 'no' => $q->no, 'date' => self::day($q->date), 'at' => self::ts($q->created_at), 'userId' => self::id($q->user_id),
-            'customerId' => self::id($q->customer_id), 'subtotal' => $q->subtotal, 'discount' => $q->discount, 'tax' => $q->tax, 'total' => $q->total,
+            'customerId' => self::id($q->customer_id), 'subtotal' => $q->subtotal, 'discount' => $q->discount, 'discountPercent' => $q->discount_percent === null ? null : (float) $q->discount_percent,
+            'tax' => $q->tax, 'taxRate' => $q->tax_rate === null ? null : (float) $q->tax_rate, 'total' => $q->total,
             'note' => $q->note ?? '', 'validUntil' => self::day($q->valid_until),
             'items' => $q->items->map(fn ($i) => ['productId' => self::id($i->product_id), 'deviceId' => null, 'qty' => $i->qty, 'price' => $i->price,
                 'discount' => $i->discount, 'name' => $i->name, 'lineTotal' => $i->line_total])->all()];

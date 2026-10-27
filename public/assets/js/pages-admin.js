@@ -253,14 +253,41 @@ PAGES.activity = {
 ACT['act-export'] = () => { need('users', 'manage'); dtExport('activity', `activity-log-${todayISO()}`); };
 
 /* ---------------- Settings ---------------- */
+/* Settings sit behind a password re-check; the server only accepts changes for 15 minutes after it */
+let settingsUnlockedUntil = 0;
+let settingsPrompted = false;
+const settingsUnlocked = () => Date.now() < settingsUnlockedUntil;
+window.addEventListener('hashchange', () => { settingsPrompted = false; });
+function confirmSettingsPassword() {
+  settingsPrompted = true;
+  const m = openModal({ title: 'Confirm your password', size: 'sm',
+    body: `<p class="muted" style="margin-top:0">Settings control tax, invoices and warranty terms. Please enter your password to continue.</p><form id="sp-form" class="stack" novalidate>${field('Password', '<input class="input" type="password" name="password" autocomplete="current-password" required>', { req: true })}</form>`,
+    foot: `<button class="btn" data-dismiss>Cancel</button><button class="btn btn-primary" type="submit" form="sp-form">${icon('lock', 'ic-sm')} Unlock settings</button>`,
+    onMount(el) {
+      const inp = $('input', el); if (inp) inp.focus();
+      bindForm($('#sp-form', el), async (d) => {
+        const r = await api('POST', '/auth/confirm-password', d);
+        settingsUnlockedUntil = Date.now() + ((r.minutes || 15) - 1) * 60000;
+        m.close(); refresh();
+      });
+    } });
+}
+Object.assign(ACT, { 'unlock-settings': () => confirmSettingsPassword() });
+
 PAGES.settings = {
   title: 'Settings', perm: ['settings', 'view'],
   render() {
+    if (!settingsUnlocked()) {
+      return pageHead('Settings', 'Protected — confirm your password to continue.') + `<div class="card"><div class="card-body" style="text-align:center;padding:48px 16px">
+        <div class="kpi-icon tone-blue" style="margin:0 auto 12px">${icon('lock')}</div><h3 style="margin:0 0 6px">Settings are locked</h3>
+        <p class="muted" style="margin:0 0 16px">For security, enter your password to view or change the settings.</p>
+        <button class="btn btn-primary" data-action="unlock-settings">${icon('lock', 'ic-sm')} Enter password</button></div></div>`;
+    }
     const s = db.settings; const ro = can('settings', 'manage') ? '' : 'disabled';
     const card = (id, title, sub, inner) => `<div class="card"><form id="${id}" novalidate><div class="card-head"><div><h3>${title}</h3><div class="sub">${sub}</div></div>${ro ? '' : `<button class="btn btn-sm btn-primary" type="submit">${icon('check', 'ic-sm')} Save</button>`}</div><div class="card-body">${inner}</div></form></div>`;
     return pageHead('Settings', ro ? 'Read-only — you need the Settings “Manage” permission to change these.' : 'Business details, tax, invoices, warranty policies, repair configuration and notifications.') + `<div class="stack">
       ${card('st-biz', 'Business profile', 'Printed on invoices, receipts and warranty certificates', `<div class="form-grid cols-3">${field('Shop name', `<input class="input" name="shopName" value="${h(s.shopName)}" ${ro}>`)}${field('Tagline', `<input class="input" name="tagline" value="${h(s.tagline)}" ${ro}>`)}${field('Tax / business ID', `<input class="input" name="taxId" value="${h(s.taxId)}" ${ro}>`)}${field('Address', `<input class="input" name="address" value="${h(s.address)}" ${ro}>`)}${field('Phone', `<input class="input" name="phone" value="${h(s.phone)}" ${ro}>`)}${field('Email', `<input class="input" name="email" value="${h(s.email)}" ${ro}>`)}</div>`)}
-      ${card('st-tax', 'Tax, currency & invoices', 'Configurable tax and payment methods', `<div class="form-grid cols-4">${field('Currency symbol', `<input class="input" name="currency" value="${h(s.currency)}" ${ro}>`)}${field('Tax name', `<input class="input" name="taxName" value="${h(s.taxName)}" ${ro}>`)}${field('Tax rate (%)', `<input class="input" name="taxRate" inputmode="decimal" value="${s.taxRate}" ${ro}>`)}${field('Prices', `<select class="select" name="taxInclusive" ${ro}><option value="1" ${s.taxInclusive ? 'selected' : ''}>Tax inclusive</option><option value="0" ${!s.taxInclusive ? 'selected' : ''}>Tax added at checkout</option></select>`)}${field('Invoice prefix', `<input class="input" name="invoicePrefix" value="${h(s.invoicePrefix)}" ${ro}>`)}${field('Payment methods', `<input class="input" name="paymentMethods" value="${h(s.paymentMethods.join(', '))}" ${ro}>`, { cls: 'span-2', hint: 'Comma-separated' })}${field('Expense categories', `<input class="input" name="expenseCategories" value="${h(s.expenseCategories.join(', '))}" ${ro}>`)}${field('Invoice footer', `<textarea class="input" name="invoiceFooter" rows="2" ${ro}>${h(s.invoiceFooter)}</textarea>`, { cls: 'span-all' })}${field('Costing method', `<input class="input" name="costing" value="${h(s.costing)}" ${ro}>`, { cls: 'span-all', hint: 'Used for stock valuation and gross profit' })}</div>`)}
+      ${card('st-tax', 'Tax, currency & invoices', 'Configurable tax and payment methods', `<div class="form-grid cols-4">${field('Currency symbol', `<input class="input" name="currency" value="${h(s.currency)}" ${ro}>`)}${field('VAT / tax', `<select class="select" name="taxEnabled" ${ro}><option value="1" ${s.taxEnabled !== false ? 'selected' : ''}>On — charge tax on sales</option><option value="0" ${s.taxEnabled === false ? 'selected' : ''}>Off — no tax on bills</option></select>`, { hint: 'When off, no tax is charged or printed. Earlier invoices keep the tax they were billed with.' })}${field('Tax name', `<input class="input" name="taxName" value="${h(s.taxName)}" ${ro}>`)}${field('Tax rate (%)', `<input class="input" name="taxRate" inputmode="decimal" value="${s.taxRate}" ${ro}>`)}${field('Prices', `<select class="select" name="taxInclusive" ${ro}><option value="1" ${s.taxInclusive ? 'selected' : ''}>Tax inclusive</option><option value="0" ${!s.taxInclusive ? 'selected' : ''}>Tax added at checkout</option></select>`)}${field('Invoice prefix', `<input class="input" name="invoicePrefix" value="${h(s.invoicePrefix)}" ${ro}>`)}${field('Payment methods', `<input class="input" name="paymentMethods" value="${h(s.paymentMethods.join(', '))}" ${ro}>`, { cls: 'span-2', hint: 'Comma-separated' })}${field('Expense categories', `<input class="input" name="expenseCategories" value="${h(s.expenseCategories.join(', '))}" ${ro}>`)}${field('Invoice footer', `<textarea class="input" name="invoiceFooter" rows="2" ${ro}>${h(s.invoiceFooter)}</textarea>`, { cls: 'span-all' })}${field('Costing method', `<input class="input" name="costing" value="${h(s.costing)}" ${ro}>`, { cls: 'span-all', hint: 'Used for stock valuation and gross profit' })}</div>`)}
       ${card('st-war', 'Product warranty policy', 'Defaults by category; per-product periods are set on each product', `<div class="form-grid cols-3">${field('Warranty starts on', '<input class="input" value="Sale date" readonly>', { hint: 'Phone warranty period is chosen by the seller at the POS' })}${field('“Expiring soon” threshold (days)', `<input class="input" name="expiringDays" inputmode="numeric" value="${s.expiringDays}" ${ro}>`)}<div></div>
         ${db.categories.map((c) => field(`${h(c.name)} — default months`, `<input class="input" data-catw="${c.id}" inputmode="numeric" value="${c.warrantyMonths}" ${ro}>`)).join('')}
         ${field('New product terms', `<textarea class="input" name="termsProduct" rows="3" ${ro}>${h(s.terms.product)}</textarea>`, { cls: 'span-all' })}${field('Used / refurbished terms', `<textarea class="input" name="termsUsed" rows="2" ${ro}>${h(s.terms.used)}</textarea>`, { cls: 'span-all' })}</div>`)}
@@ -276,14 +303,21 @@ PAGES.settings = {
       </div></div></div>`;
   },
   mount() {
+    if (!settingsUnlocked()) { if (!settingsPrompted) confirmSettingsPassword(); return; }
     if (!can('settings', 'manage')) return;
     const s = new Proxy({}, { get: (_, k) => db.settings[k] });
-    const save = async (patch, msg = 'Settings saved.') => { await svc.saveSettings(patch); toast(msg); refresh(); };
+    const save = async (patch, msg = 'Settings saved.') => {
+      try { await svc.saveSettings(patch); } catch (e) {
+        if (/confirm your password/i.test(e.message)) { settingsUnlockedUntil = 0; settingsPrompted = false; refresh(); }
+        throw e;
+      }
+      toast(msg); refresh();
+    };
     bindForm($('#st-biz'), async (d) => save(d));
     bindForm($('#st-tax'), async (d) => {
       const rate = Number(d.taxRate); if (!(rate >= 0 && rate <= 100)) throw new AppError('Tax rate must be between 0 and 100.');
       const pm = d.paymentMethods.split(',').map((x) => x.trim()).filter(Boolean); if (!pm.length) throw new AppError('Add at least one payment method.');
-      await save({ currency: d.currency, taxName: d.taxName, taxRate: rate, taxInclusive: d.taxInclusive === '1', invoicePrefix: d.invoicePrefix, invoiceFooter: d.invoiceFooter, costing: d.costing, paymentMethods: pm, expenseCategories: d.expenseCategories.split(',').map((x) => x.trim()).filter(Boolean) });
+      await save({ currency: d.currency, taxEnabled: d.taxEnabled === '1', taxName: d.taxName, taxRate: rate, taxInclusive: d.taxInclusive === '1', invoicePrefix: d.invoicePrefix, invoiceFooter: d.invoiceFooter, costing: d.costing, paymentMethods: pm, expenseCategories: d.expenseCategories.split(',').map((x) => x.trim()).filter(Boolean) });
     });
     bindForm($('#st-war'), async (d) => {
       for (const i of $$('[data-catw]')) {

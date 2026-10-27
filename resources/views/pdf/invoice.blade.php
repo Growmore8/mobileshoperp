@@ -27,8 +27,9 @@
 @endif
 <table class="totals">
   <tr><td>Subtotal</td><td class="num">{{ $money($sale->subtotal) }}</td></tr>
-  @if($sale->discount > 0)<tr><td>Invoice discount</td><td class="num">−{{ $money($sale->discount) }}</td></tr>@endif
-  <tr><td>{{ $settings['tax_name'] ?? 'Tax' }} {{ $settings['tax_rate'] ?? 0 }}% {{ $sale->tax_inclusive ? '(included)' : '' }}</td><td class="num">{{ $money($sale->tax) }}</td></tr>
+  @if($sale->discount > 0)<tr><td>Discount{{ $sale->discount_percent ? ' ('.rtrim(rtrim(number_format((float) $sale->discount_percent, 2), '0'), '.').'% off)' : '' }}</td><td class="num">−{{ $money($sale->discount) }}</td></tr>@endif
+  @php($vatRate = $sale->tax_rate ?? ($settings['tax_rate'] ?? 0))
+  @if($sale->tax > 0 || $vatRate > 0)<tr><td>{{ $settings['tax_name'] ?? 'Tax' }} {{ rtrim(rtrim(number_format((float) $vatRate, 2), '0'), '.') }}% {{ $sale->tax_inclusive ? '(included)' : '' }}</td><td class="num">{{ $money($sale->tax) }}</td></tr>@endif
   @if($t['returned'] > 0)<tr><td>Returns</td><td class="num">−{{ $money($t['returned']) }}</td></tr>@endif
   <tr class="grand"><td>Total</td><td class="num">{{ $money($t['net']) }}</td></tr>
   @if($sale->change_given > 0)<tr><td>Change given</td><td class="num">{{ $money($sale->change_given) }}</td></tr>@endif

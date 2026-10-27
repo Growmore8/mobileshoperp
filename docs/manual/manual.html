@@ -15,6 +15,7 @@
   h1 .num { display: inline-block; min-width: 11mm; height: 11mm; line-height: 11mm; margin-right: 3mm; text-align: center; border-radius: 3mm; background: linear-gradient(135deg, var(--blue), var(--green)); color: var(--dark); font-size: 14pt; vertical-align: 2px; }
   h2 { font-size: 13.5pt; margin: 7mm 0 2.5mm; color: var(--blue-d); }
   h3 { font-size: 11pt; margin: 5mm 0 1.5mm; }
+  h2, h3 { break-after: avoid; page-break-after: avoid; }
   p { margin: 0 0 2.6mm; }
   .chapter { break-before: page; }
   .lead { font-size: 11.5pt; color: #333a42; margin-bottom: 5mm; }
@@ -184,6 +185,7 @@
   <table>
     <tr><th style="width:42%">I want to…</th><th>Go to</th><th style="width:12%">Chapter</th></tr>
     <tr><td>Sell a phone or accessory</td><td><b>POS / New Sale</b> (or press F2) → add items → choose warranty → <span class="ui">Charge</span></td><td>4</td></tr>
+    <tr><td>Give a % discount / special offer</td><td>POS → Discount → choose <span class="ui">%</span> → type e.g. 10</td><td>4</td></tr>
     <tr><td>Give a customer a price quote</td><td>POS → add items → <span class="ui">Quotation</span></td><td>4</td></tr>
     <tr><td>Reprint an invoice</td><td>Search the invoice number → <span class="ui">Print</span> / <span class="ui">PDF</span></td><td>5</td></tr>
     <tr><td>Take back an item / refund</td><td>Invoice → <span class="ui">Return / refund</span> (manager)</td><td>5</td></tr>
@@ -196,6 +198,7 @@
     <tr><td>Give a new phone for a faulty one</td><td>Claim (approved) → <span class="ui">Replace with new unit</span></td><td>13</td></tr>
     <tr><td>Record a shop expense (bills, tea, transport)</td><td><b>Payments &amp; Expenses</b> → <span class="ui">Record expense</span></td><td>14</td></tr>
     <tr><td>See today's sales / month profit</td><td><b>Dashboard</b> or <b>Reports</b></td><td>15</td></tr>
+    <tr><td>Switch VAT on or off</td><td><b>Settings</b> (password) → Tax, currency &amp; invoices → <b>VAT / tax</b></td><td>17</td></tr>
     <tr><td>Add a new staff member</td><td><b>Users &amp; Roles</b> → <span class="ui">New staff account</span></td><td>16</td></tr>
   </table>
   <h2>A good daily routine</h2>
@@ -230,11 +233,16 @@
   <h2>Step 3: Customer, discount and payment</h2>
   <ol class="steps">
     <li>Choose the customer, or leave <b>Walk-in customer</b>. For a new customer, click the person-plus button and save their name and phone. Linking a customer is recommended for phones, because the warranty is then tied to their name and phone number.</li>
-    <li>If allowed for your role, change a price or enter an invoice <b>Discount</b>. The system warns you if a price is below cost.</li>
+    <li>If allowed for your role, change a price or give a <b>Discount</b>. Use the small switch next to the discount box:
+      <ul><li><span class="ui">Rs.</span> takes off a fixed amount, for example Rs. 1,000.</li>
+      <li><span class="ui">%</span> takes off a percentage for offers, for example 10. The cart shows <b>Discount (10% off)</b> and how much the customer saves, and the invoice prints the same.</li></ul>
+      The system warns you if a price is below cost.</li>
     <li>Click <span class="ui">Charge Rs. …</span>. In <b>Take payment</b>, enter the amount for each method: Cash, Card, Bank Transfer or Mobile Wallet. <span class="ui">Split payment</span> lets the customer pay part cash, part card. The quick cash buttons fill in common notes, and the change is calculated for you.</li>
     <li>If the customer pays only part now, tick <b>Record the unpaid balance as customer credit</b>. This needs a registered customer, not a walk-in.</li>
     <li>Click <span class="ui">Complete sale</span>.</li>
   </ol>
+  <figure class="half"><img src="img/26-pos-discount.jpg" style="width:52%"><figcaption>A 10% offer in the cart. VAT is switched off here, so no VAT line is shown.</figcaption></figure>
+  <div class="callout tip"><b>VAT line</b>When VAT is switched <b>on</b> in Settings, the cart shows the VAT amount (for example "VAT 8% (incl.)"). When it is switched <b>off</b>, no VAT is charged and the VAT line disappears from the cart, the invoice and the PDF.</div>
   <h2>Step 4: After the sale</h2>
   <p>The <b>Sale completed</b> window shows the invoice number (INV-…), the change or balance, and how many warranty records were created. Click <span class="ui">Invoice</span> to print, <span class="ui">PDF</span> to download, or <span class="ui">Warranty card</span> to print the customer's warranty certificate. Click <span class="ui">New sale</span> for the next customer.</p>
   <h2>Quotations</h2>
@@ -255,6 +263,7 @@
     <tr><td><span class="ui">Return / refund</span></td><td>Take back some or all items. Tick the phones to return or enter accessory quantities. Choose where the stock goes: <b>Sellable stock</b>, <b>Hold for inspection</b> or <b>Damaged / defective</b>. Then choose the refund method and type a reason. Warranties of returned phones are cancelled automatically.</td></tr>
     <tr><td><span class="ui">Cancel invoice</span></td><td>Cancel a wrong sale completely. Stock is restored, warranties are voided and payments are refunded. A reason is required. Invoices from a previous day need manager approval. If anything was already returned, use Return / refund instead.</td></tr>
   </table>
+  <div class="callout tip"><b>How a bill shows discount and VAT</b>A percentage discount prints as <b>Discount (10% off)</b>. When VAT was charged, the document is titled <b>Tax Invoice</b> and shows the VAT line at the rate used on that day. When VAT was off, it is titled <b>Invoice</b> with no VAT line. Each invoice keeps the VAT it was billed with, so turning VAT on or off later never changes old bills.</div>
   <div class="callout tip"><b>Nothing is ever deleted</b>Cancelled and refunded invoices stay in the list with their status and an audit trail of who did what and when.</div>
 </section>
 
@@ -528,16 +537,27 @@
 <section class="chapter" id="c17">
   <h1><span class="num">17</span>Settings &amp; activity log</h1>
   <p class="lead"><b>Settings</b> (administrator) controls the shop details printed on documents, tax, warranty rules and repair types. Each section has its own <span class="ui">Save</span> button.</p>
+  <h2>Settings are password-protected</h2>
+  <p>Every time you open Settings, the system asks you to <b>confirm your password</b>. This protects tax, invoice and warranty settings on a shared shop PC. After you confirm, you can make changes for 15 minutes; then it asks again. A wrong password is recorded in the Activity Log. If you click Cancel, the page stays locked until you click <span class="ui">Enter password</span>.</p>
+  <figure class="half"><img src="img/24-settings-lock.jpg"><figcaption>"Confirm your password" when opening Settings</figcaption></figure>
   <figure><img src="img/22-settings.jpg"><figcaption>Settings</figcaption></figure>
   <table>
     <tr><th style="width:30%">Section</th><th>What to set</th></tr>
     <tr><td><b>Business profile</b></td><td>Shop name, tagline, tax / business ID, address, phone and email. These appear on invoices, receipts and warranty cards.</td></tr>
-    <tr><td><b>Tax, currency &amp; invoices</b></td><td>Currency (Rs.), tax name and rate, whether prices include tax, invoice prefix, payment methods, expense categories, invoice footer text.</td></tr>
+    <tr><td><b>Tax, currency &amp; invoices</b></td><td><b>VAT / tax On or Off</b>, currency (Rs.), tax name and rate, whether prices include tax, invoice prefix, payment methods, expense categories, invoice footer text.</td></tr>
     <tr><td><b>Product warranty policy</b></td><td>The "expiring soon" warning period, default warranty months per category, and the terms printed for new and used / refurbished items.</td></tr>
     <tr><td><b>Repairs &amp; repair warranty</b></td><td>Whether the repair warranty starts at delivery or at completion, whether a customer signature is required at delivery, repair types with their labour warranty days, and the repair terms text.</td></tr>
     <tr><td><b>Notifications</b></td><td>Which alerts appear in the bell.</td></tr>
   </table>
-  <div class="callout warn"><b>Before going live</b>Confirm the correct <b>VAT rate and VAT number</b> with your accountant. The system was delivered with a placeholder rate of 8%. Check the warranty and repair terms text too, because it is printed on every customer document.</div>
+  <h2>Switching VAT on or off</h2>
+  <figure><img src="img/25-settings-vat.jpg"><figcaption>The VAT / tax switch in Settings → Tax, currency &amp; invoices</figcaption></figure>
+  <ol class="steps">
+    <li>Open <b>Settings</b> and confirm your password.</li>
+    <li>In <b>Tax, currency &amp; invoices</b>, set <b>VAT / tax</b> to <b>On — charge tax on sales</b> or <b>Off — no tax on bills</b>.</li>
+    <li>Click <span class="ui">Save</span>. New sales and quotations follow the new setting straight away.</li>
+  </ol>
+  <p>With VAT <b>off</b>, no VAT is added or shown at the POS, on invoices, quotations or PDFs, and invoices are titled "Invoice" instead of "Tax Invoice". Invoices made earlier keep the VAT they were billed with. The switch applies to the whole shop, not to one bill.</p>
+  <div class="callout warn"><b>Before going live</b>Ask your accountant whether the shop must charge VAT. If it must, confirm the correct <b>VAT rate and VAT number</b>; the system was delivered with a placeholder rate of 8%. If the shop is not VAT-registered, switch VAT <b>Off</b>. Check the warranty and repair terms text too, because it is printed on every customer document.</div>
   <h2>Activity log</h2>
   <figure><img src="img/21-activity.jpg"><figcaption>Activity log: who did what, and when</figcaption></figure>
   <p>The <b>Activity Log</b> records every sign-in (including failed attempts) and every change, with the time, staff name and details. Tick <b>Sensitive only</b> to see refunds, permission changes, stock adjustments, warranty changes and price changes.</p>
@@ -558,12 +578,17 @@
     <tr><td>Invalid IMEI — check digit failed.</td><td>The number was mistyped or mis-scanned. Scan it again.</td></tr>
     <tr><td>Customer must accept the repair terms before the job is created.</td><td>Read the terms to the customer and tick the box.</td></tr>
     <tr><td>Customer signature is required for delivery.</td><td>Ask the customer to sign in the signature box.</td></tr>
+    <tr><td>Incorrect password. (when opening Settings)</td><td>Type your own sign-in password again. Ask the administrator if you have forgotten it.</td></tr>
+    <tr><td>Please confirm your password to change settings.</td><td>More than 15 minutes have passed. Enter your password again and save.</td></tr>
+    <tr><td>A percentage discount cannot be more than 100%.</td><td>Enter a percentage between 1 and 100.</td></tr>
     <tr><td>Access denied — your role does not have … permission.</td><td>Ask a manager. Your role isn't allowed this action.</td></tr>
     <tr><td>Your session has expired. Please sign in again.</td><td>Sign in again. Sessions last up to 12 hours.</td></tr>
   </table>
   <h2>Frequently asked questions</h2>
   <h3>Can I delete a wrong sale?</h3><p>No. Sales are never deleted, so that records stay honest. A manager can <b>cancel</b> the invoice, or use <b>Return / refund</b>. Both are kept in the history.</p>
   <h3>A customer lost the invoice. How do I prove the warranty?</h3><p>Search the phone's IMEI or the customer's phone number. The invoice and warranty appear instantly, and you can reprint both.</p>
+  <h3>Some sales don't need VAT. What do I do?</h3><p>VAT is switched on or off for the whole shop in <b>Settings → Tax, currency &amp; invoices</b> (chapter 17). Ask your accountant which applies to your business. Old invoices are never changed by the switch.</p>
+  <h3>How do I give "10% off"?</h3><p>At the POS, click <span class="ui">%</span> next to Discount and type 10. The invoice prints "Discount (10% off)". Only roles allowed to give discounts (POS Edit) can do this.</p>
   <h3>The screen looks old after an update.</h3><p>Press <b>Ctrl + F5</b> once to reload the page.</p>
   <h3>Is my data backed up?</h3><p>Yes. The database and uploaded files are backed up automatically every night on the server.</p>
   <h3>Can I use it when the internet is down?</h3><p>No. The system needs an internet connection, because all staff share one live database. Keep a mobile data hotspot as a backup connection for the shop PC.</p>
