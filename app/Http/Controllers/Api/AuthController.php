@@ -19,6 +19,7 @@ class AuthController extends Controller
         $data = $request->validate([
             'username' => ['required', 'string', 'max:60'],
             'password' => ['required', 'string', 'max:200'],
+            'remember' => ['sometimes', 'boolean'],
         ]);
 
         $user = User::with('role')->where('username', strtolower(trim($data['username'])))->first();
@@ -39,8 +40,11 @@ class AuthController extends Controller
         }
 
         $user->forceFill(['failed_logins' => 0, 'last_login_at' => now()])->save();
-        $token = $user->createToken('web', ['*'], now()->addHours((int) config('sanctum.expiration_hours', 12)))->plainTextToken;
-        Audit::log('users', 'Signed in', "{$user->name} signed in", null, $user->id);
+        // "Keep me signed in on this device": the token lasts remember_days instead of a working day
+        $remember = (bool) ($data['remember'] ?? false);
+        $expires = $remember ? now()->addDays((int) config('sanctum.remember_days', 30)) : now()->addHours((int) config('sanctum.expiration_hours', 12));
+        $token = $user->createToken($remember ? 'web-remember' : 'web', ['*'], $expires)->plainTextToken;
+        Audit::log('users', 'Signed in', "{$user->name} signed in".($remember ? ' (kept signed in on this device)' : ''), null, $user->id);
 
         return response()->json(['token' => $token, 'user' => self::payload($user)]);
     }

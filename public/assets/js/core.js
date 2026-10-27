@@ -132,8 +132,15 @@ function emptyDb() {
 }
 db = emptyDb();
 
-function getToken() { try { return sessionStorage.getItem(TOKEN_KEY); } catch (e) { return null; } }
-function setToken(t) { try { t ? sessionStorage.setItem(TOKEN_KEY, t) : sessionStorage.removeItem(TOKEN_KEY); } catch (e) { /* private mode */ } }
+// Normal sign-in lives in sessionStorage (ends when the browser closes);
+// "Keep me signed in on this device" keeps it in localStorage until it expires or the user signs out.
+function getToken() { try { return sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY); } catch (e) { return null; } }
+function setToken(t, remember = false) {
+  try {
+    sessionStorage.removeItem(TOKEN_KEY); localStorage.removeItem(TOKEN_KEY);
+    if (t) (remember ? localStorage : sessionStorage).setItem(TOKEN_KEY, t);
+  } catch (e) { /* private mode */ }
+}
 
 /** Call the API. Throws AppError with the server's human-readable message. */
 async function api(method, path, body, { multipart = false } = {}) {
@@ -218,9 +225,9 @@ function productName(id) { const p = find('products', id); return p ? p.name : '
 function catKind(categoryId) { return (db.categories.find((c) => c.id === categoryId) || {}).kind || ''; }
 
 /* ---------------- Auth ---------------- */
-async function login(username, password) {
-  const r = await api('POST', '/auth/login', { username, password });
-  setToken(r.token);
+async function login(username, password, remember = false) {
+  const r = await api('POST', '/auth/login', { username, password, remember: !!remember });
+  setToken(r.token, remember);
   await syncData(true);
   return currentUser;
 }

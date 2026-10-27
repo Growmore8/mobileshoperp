@@ -32,6 +32,20 @@ class AuthTest extends TestCase
         $this->assertDatabaseHas('activity_logs', ['action' => 'Signed in', 'user_id' => $u->id]);
     }
 
+    public function test_keep_me_signed_in_issues_a_30_day_token(): void
+    {
+        User::factory()->role('Sales Executive')->create(['username' => 'kevin', 'password' => 'secret-pass']);
+
+        $this->postJson('/api/auth/login', ['username' => 'kevin', 'password' => 'secret-pass'])->assertOk();
+        $short = \Laravel\Sanctum\PersonalAccessToken::latest('id')->first();
+        $this->assertTrue($short->expires_at->between(now()->addHours(11), now()->addHours(13)));
+
+        $this->postJson('/api/auth/login', ['username' => 'kevin', 'password' => 'secret-pass', 'remember' => true])->assertOk();
+        $long = \Laravel\Sanctum\PersonalAccessToken::latest('id')->first();
+        $this->assertTrue($long->expires_at->between(now()->addDays(29), now()->addDays(31)));
+        $this->assertTrue(ActivityLog::where('action', 'Signed in')->where('detail', 'like', '%(kept signed in on this device)')->exists());
+    }
+
     public function test_wrong_password_is_rejected_and_counted(): void
     {
         $u = User::factory()->create(['username' => 'kevin', 'password' => 'secret-pass']);

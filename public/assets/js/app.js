@@ -113,8 +113,9 @@ function renderLogin() {
         <h2>Sign in</h2>
         <p class="lg-sub">Welcome back. Please sign in with your staff account.</p>
         <form id="login-form" class="stack" novalidate>
-          <div class="field"><label for="lg-user">Username</label><input class="input" id="lg-user" name="username" autocomplete="username" placeholder="e.g. kevin" required></div>
+          <div class="field"><label for="lg-user">Username</label><input class="input" id="lg-user" name="username" autocomplete="username" placeholder="e.g. kevin" value="${h(rememberedUser())}" required></div>
           <div class="field"><label for="lg-pass">Password</label><div class="lg-pass"><input class="input" id="lg-pass" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required><button class="lg-eye" type="button" aria-label="Show password" aria-pressed="false">${icon('eye')}</button></div></div>
+          <label class="check lg-remember"><input type="checkbox" id="lg-remember" ${rememberedUser() ? 'checked' : ''}><span>Keep me signed in on this device<small>For 30 days. Don't tick this on a shared computer.</small></span></label>
           <button class="btn lg-submit" type="submit">Sign in <span aria-hidden="true">→</span></button>
         </form>
         <p class="lg-help">Forgot your password? Ask your administrator to reset it.</p>
@@ -130,14 +131,23 @@ function renderLogin() {
     btn.setAttribute('aria-pressed', String(show)); btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
   });
   const form = $('#login-form');
-  bindForm(form, async (d) => { await login(d.username, d.password); afterLogin(); });
+  bindForm(form, async (d) => {
+    const keep = $('#lg-remember').checked;
+    await login(d.username, d.password, keep);
+    rememberUser(keep ? d.username : '');
+    afterLogin();
+  });
   $$('.demo-acc').forEach((b) => b.addEventListener('click', async () => {
     if (b.getAttribute('aria-busy')) return;
     b.setAttribute('aria-busy', 'true');
     try { await login(b.dataset.u, b.dataset.p); afterLogin(); } catch (e) { showFormError(form, e); } finally { b.removeAttribute('aria-busy'); }
   }));
-  if (window.matchMedia('(min-width: 721px)').matches) $('#lg-user').focus();
+  if (window.matchMedia('(min-width: 721px)').matches) (rememberedUser() ? $('#lg-pass') : $('#lg-user')).focus();
 }
+/* Username remembered with "Keep me signed in" so the next sign-in only needs the password */
+const REMEMBER_USER_KEY = 'mobicore_remember_user';
+function rememberedUser() { try { return localStorage.getItem(REMEMBER_USER_KEY) || ''; } catch (e) { return ''; } }
+function rememberUser(u) { try { u ? localStorage.setItem(REMEMBER_USER_KEY, String(u).trim().toLowerCase()) : localStorage.removeItem(REMEMBER_USER_KEY); } catch (e) { /* private mode */ } }
 function afterLogin() {
   $('#app').innerHTML = '';
   Object.keys(DT).forEach((k) => delete DT[k]);

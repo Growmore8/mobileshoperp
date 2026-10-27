@@ -52,6 +52,10 @@ return [
 
     'expiration' => null,
 
+    // Sign-in length: a normal session, and 'Keep me signed in on this device' on the login page
+    'expiration_hours' => (int) env('SESSION_TOKEN_HOURS', 12),
+    'remember_days' => (int) env('REMEMBER_DEVICE_DAYS', 30),
+
     /*
     |--------------------------------------------------------------------------
     | Token Prefix
