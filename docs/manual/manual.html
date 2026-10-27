@@ -53,7 +53,7 @@
   .cover { height: 297mm; position: relative; overflow: hidden; color: #fff; background:
       radial-gradient(130mm 110mm at 0% 0%, rgba(41,171,226,.55), transparent 70%),
       radial-gradient(120mm 110mm at 100% 100%, rgba(57,181,74,.45), transparent 70%), #10141a; padding: 26mm 22mm; display: flex; flex-direction: column; }
-  .cover-bg { position: absolute; inset: -8mm; background: url("img/login-bg.jpg") center / cover no-repeat; filter: blur(4px) brightness(.42) saturate(1.1); }
+  .cover-bg { position: absolute; inset: 0; background: url("img/login-bg.jpg") center / cover no-repeat; filter: brightness(.5) saturate(1.1); }
   .cover::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(6,9,13,.86) 0%, rgba(6,9,13,.55) 60%, rgba(6,9,13,.7) 100%), linear-gradient(0deg, rgba(6,9,13,.75) 0%, transparent 45%); z-index: 1; }
   .cover > *:not(.cover-bg) { position: relative; z-index: 2; }
   .cover .logo { display: flex; align-items: center; gap: 4mm; }
