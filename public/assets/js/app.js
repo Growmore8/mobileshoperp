@@ -97,7 +97,7 @@ function renderLogin() {
   const shop = (db.settings && db.settings.shopName) || META.shopName || 'Shop';
   document.title = `Sign in · ${shop}`;
   $('#app').innerHTML = `<div class="login">
-    <div class="lg-bg" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i><div class="lg-dots"></div></div>
+    <div class="lg-bg" aria-hidden="true"><div class="lg-photo"></div><i class="b1"></i><i class="b2"></i></div>
     <div class="lg-inner">
       <div class="brand lg-brand"><div class="brand-logo" style="color:#161616">${icon('phone')}</div><div><div class="brand-name">${h(shop)}</div><div class="brand-sub">MobiCore ERP</div></div></div>
       <section class="lg-copy">
@@ -106,7 +106,6 @@ function renderLogin() {
         <p>Sell the latest iPhone and Galaxy models, book repairs and settle warranty claims — with every unit tracked by its IMEI, from supplier to customer.</p>
         <div class="lg-tags">${[['scan', 'IMEI tracking'], ['wrench', 'Repairs'], ['shield', 'Warranty claims'], ['chart', 'Live reports']].map(([i, t]) => `<span class="lg-tag">${icon(i)}${t}</span>`).join('')}</div>
       </section>
-      <div class="lg-art">${heroPhone(shop)}</div>
       <section class="lg-card">
         <h2>Sign in</h2>
         <p class="lg-sub">Good to see you again — use your staff account.</p>
@@ -135,28 +134,6 @@ function renderLogin() {
     try { await login(b.dataset.u, b.dataset.p); afterLogin(); } catch (e) { showFormError(form, e); } finally { b.removeAttribute('aria-busy'); }
   }));
   if (window.matchMedia('(min-width: 721px)').matches) $('#lg-user').focus();
-}
-/* Login illustration: a fan of iPhone and Galaxy handsets in several colours, the front one running the ERP — drawn in CSS, decorative */
-function heroPhone(shop) {
-  const bars = [38, 55, 46, 70, 62, 84, 100];
-  return `<div class="hero-stage" aria-hidden="true">
-    <div class="hero-glow"></div>
-    <div class="dev dev-gback"><div class="gb-cam"><i></i><i></i><i></i></div><b class="gb-flash"></b></div>
-    <div class="dev dev-iphone ip-blue"><div class="ip-cam"><i class="l1"></i><i class="l2"></i><i class="l3"></i><b class="fl"></b><b class="ld"></b></div><div class="ip-ring"></div></div>
-    <div class="dev dev-iphone ip-orange"><div class="ip-cam"><i class="l1"></i><i class="l2"></i><i class="l3"></i><b class="fl"></b><b class="ld"></b></div><div class="ip-ring"></div></div>
-    <div class="dev dev-galaxy"><div class="gx-punch"></div><div class="hp-screen">
-      <div class="hp-status"><span>9:41</span><span>5G ▮▮▮</span></div>
-      <div class="hp-head"><div class="hp-logo">${icon('phone')}</div><div class="truncate"><b>${h(shop)}</b><small>Today</small></div></div>
-      <div class="hp-kpi"><small>Sales today</small><b>14 phones sold</b><span>${icon('chart', 'ic-sm')} +18% this week</span></div>
-      <div class="hp-bars">${bars.map((v, i) => `<i style="height:${v}%;animation-delay:${i * 0.08}s"></i>`).join('')}</div>
-      <div class="hp-row"><div class="hp-ic blue">${icon('phone')}</div><div class="grow truncate"><b>iPhone Pro 256GB</b><small class="mono">IMEI 35•••• 4821</small></div><span class="hp-tag green">12 mo</span></div>
-      <div class="hp-row"><div class="hp-ic green">${icon('wrench')}</div><div class="grow truncate"><b>Galaxy screen repair</b><small>Ready for pickup</small></div><span class="hp-tag blue">Ready</span></div>
-      <div class="hp-row"><div class="hp-ic dark">${icon('shield')}</div><div class="grow truncate"><b>Warranty claim</b><small>Unit replaced</small></div><span class="hp-tag">${icon('check', 'ic-sm')}</span></div>
-    </div></div>
-    <div class="hero-chip c1">${icon('phone')}<span>Latest iPhone · in stock</span></div>
-    <div class="hero-chip c2">${icon('shield')}<span>Galaxy Ultra · 12-mo warranty</span></div>
-    <div class="hero-chip c3">${icon('scan')}<span>IMEI verified</span></div>
-  </div>`;
 }
 function afterLogin() {
   $('#app').innerHTML = '';
