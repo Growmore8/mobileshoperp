@@ -150,7 +150,7 @@ return new class extends Migration
             $table->string('approval_by')->nullable();
             $table->boolean('terms_accepted')->default(false);
             $table->enum('status', ['received', 'inspection', 'diagnosed', 'awaiting_approval', 'awaiting_parts', 'in_progress', 'completed', 'qc', 'ready', 'delivered', 'cancelled'])->default('received')->index();
-            $table->timestamp('received_at');
+            $table->timestamp('received_at')->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->timestamp('ready_at')->nullable();
             $table->timestamp('delivered_at')->nullable();
