@@ -97,28 +97,36 @@ function renderLogin() {
   const shop = (db.settings && db.settings.shopName) || META.shopName || 'Shop';
   document.title = `Sign in · ${shop}`;
   $('#app').innerHTML = `<div class="login">
-    <section class="login-hero">
-      <div class="brand" style="padding:0;border:0;height:auto"><div class="brand-logo" style="color:#161616">${icon('phone')}</div><div><div class="brand-name">${h(shop)}</div><div class="brand-sub" style="color:#9aa3ad">MobiCore ERP</div></div></div>
-      <div class="hero-main">
-        <div class="stack gap-lg hero-copy">
-          <div class="hero-eyebrow">${icon('sparkles', 'ic-sm')} Sales · Stock · Repairs · Warranty</div>
-          <h1>Every phone. Every IMEI. <span class="hero-grad">Every warranty.</span></h1>
-          <p>Sell the latest iPhone and Galaxy models, book repairs and settle warranty claims — with every unit tracked by its IMEI, from supplier to customer.</p>
-          <div class="hero-feats">${[['scan', 'IMEI tracking'], ['wrench', 'Repair workflow'], ['shield', 'Product & repair warranty'], ['key', 'Staff permissions'], ['receipt', 'Invoices & PDF'], ['chart', 'Live reports']].map(([i, t]) => `<div class="hero-feat">${icon(i)}<span>${t}</span></div>`).join('')}</div></div>
-        ${heroPhone(shop)}
-      </div>
-      <div class="small" style="color:#8a929c">${META.demo ? 'Demo installation' : ''}</div>
-    </section>
-    <section class="login-panel"><div class="login-box stack gap-lg">
-      <div><h2 style="font-size:26px">Welcome back</h2><p class="muted">Sign in to ${h(shop)} with your staff account.</p></div>
-      <form id="login-form" class="stack" novalidate>
-        <div class="field"><label for="lg-user">Username</label><input class="input" id="lg-user" name="username" autocomplete="username" required></div>
-        <div class="field"><label for="lg-pass">Password</label><input class="input" id="lg-pass" name="password" type="password" autocomplete="current-password" required></div>
-        <button class="btn btn-primary btn-lg btn-block" type="submit">Sign in</button>
-      </form>
-      ${META.demo && META.demoAccounts.length ? `<div><div class="label mb-sm">Demo accounts — click to sign in</div>
-        <div class="demo-accounts">${META.demoAccounts.map((a) => `<button class="demo-acc" data-u="${h(a.username)}" data-p="${h(a.password)}" type="button">${avatar(a.name)}<div class="grow" style="min-width:0"><div class="n truncate">${h(a.name)}</div><div class="r truncate">${h(a.role)}${a.active ? '' : ' · deactivated'}</div><div class="r mono">${h(a.username)} / ${h(a.password)}</div></div></button>`).join('')}</div></div>` : ''}
-    </div>${credit()}</section></div>`;
+    <div class="lg-bg" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i><div class="lg-dots"></div></div>
+    <div class="lg-inner">
+      <div class="brand lg-brand"><div class="brand-logo" style="color:#161616">${icon('phone')}</div><div><div class="brand-name">${h(shop)}</div><div class="brand-sub">MobiCore ERP</div></div></div>
+      <section class="lg-copy">
+        <div class="lg-eyebrow">Sales · Stock · Repairs · Warranty</div>
+        <h1>Every phone. Every IMEI. <span class="hero-grad">Every warranty.</span></h1>
+        <p>Sell the latest iPhone and Galaxy models, book repairs and settle warranty claims — with every unit tracked by its IMEI, from supplier to customer.</p>
+        <div class="lg-tags">${[['scan', 'IMEI tracking'], ['wrench', 'Repairs'], ['shield', 'Warranty claims'], ['chart', 'Live reports']].map(([i, t]) => `<span class="lg-tag">${icon(i)}${t}</span>`).join('')}</div>
+      </section>
+      <div class="lg-art">${heroPhone(shop)}</div>
+      <section class="lg-card">
+        <h2>Sign in</h2>
+        <p class="lg-sub">Good to see you again — use your staff account.</p>
+        <form id="login-form" class="stack" novalidate>
+          <div class="field"><label for="lg-user">Username</label><input class="input" id="lg-user" name="username" autocomplete="username" placeholder="e.g. kevin" required></div>
+          <div class="field"><label for="lg-pass">Password</label><div class="lg-pass"><input class="input" id="lg-pass" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required><button class="lg-eye" type="button" aria-label="Show password" aria-pressed="false">${icon('eye')}</button></div></div>
+          <button class="btn lg-submit" type="submit">Sign in <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="lg-help">Forgot password? Ask your administrator to reset it.</p>
+        ${META.demo && META.demoAccounts.length ? `<div class="lg-demo"><div class="lg-or"><span>Demo accounts — click to sign in</span></div>
+          <div class="demo-accounts">${META.demoAccounts.map((a) => `<button class="demo-acc" data-u="${h(a.username)}" data-p="${h(a.password)}" type="button">${avatar(a.name)}<div class="grow" style="min-width:0"><div class="n truncate">${h(a.name)}</div><div class="r truncate">${h(a.role)}${a.active ? '' : ' · deactivated'}</div><div class="r mono">${h(a.username)} / ${h(a.password)}</div></div></button>`).join('')}</div></div>` : ''}
+      </section>
+    </div>
+    ${credit()}
+  </div>`;
+  $('.lg-eye').addEventListener('click', (ev) => {
+    const btn = ev.currentTarget, inp = $('#lg-pass'), show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    btn.setAttribute('aria-pressed', String(show)); btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  });
   const form = $('#login-form');
   bindForm(form, async (d) => { await login(d.username, d.password); afterLogin(); });
   $$('.demo-acc').forEach((b) => b.addEventListener('click', async () => {
