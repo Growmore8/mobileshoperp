@@ -98,11 +98,14 @@ function renderLogin() {
   document.title = `Sign in · ${shop}`;
   $('#app').innerHTML = `<div class="login">
     <section class="login-hero">
-      <div class="brand" style="padding:0;border:0;height:auto"><div class="brand-logo" style="color:#161616">${icon('phone')}</div><div><div class="brand-name">${h(shop)}</div><div class="brand-sub" style="color:#9aa3ad">Powered by MobiCore ERP</div></div></div>
-      <div class="stack gap-lg"><h1>Run the whole shop — sales, IMEI stock, repairs and warranties — from one screen.</h1>
-        <p>Billing & POS, IMEI-level inventory, supplier purchases, repair job tracking, separate product and repair warranties, claims, reports and role-based staff access.</p>
-        <div class="hero-feats">${[['scan', 'IMEI & serial tracking'], ['wrench', '11-stage repair workflow'], ['shield', 'Product + repair warranties'], ['key', 'Granular permissions'], ['receipt', 'Invoices, PDF & print'], ['chart', 'Sales, stock & repair reports']].map(([i, t]) => `<div class="hero-feat">${icon(i)}<span>${t}</span></div>`).join('')}</div></div>
-      <div class="small" style="color:#8a929c">MobiCore ERP${META.demo ? ' · Demo installation' : ''}</div>
+      <div class="brand" style="padding:0;border:0;height:auto"><div class="brand-logo" style="color:#161616">${icon('phone')}</div><div><div class="brand-name">${h(shop)}</div><div class="brand-sub" style="color:#9aa3ad">MobiCore ERP</div></div></div>
+      <div class="hero-main">
+        <div class="stack gap-lg hero-copy"><h1>Run the whole shop — sales, IMEI stock, repairs and warranties — from one screen.</h1>
+          <p>Billing & POS, IMEI-level inventory, supplier purchases, repair job tracking, separate product and repair warranties, claims, reports and role-based staff access.</p>
+          <div class="hero-feats">${[['scan', 'IMEI & serial tracking'], ['wrench', '11-stage repair workflow'], ['shield', 'Product + repair warranties'], ['key', 'Granular permissions'], ['receipt', 'Invoices, PDF & print'], ['chart', 'Sales, stock & repair reports']].map(([i, t]) => `<div class="hero-feat">${icon(i)}<span>${t}</span></div>`).join('')}</div></div>
+        ${heroPhone(shop)}
+      </div>
+      <div class="small" style="color:#8a929c">${META.demo ? 'Demo installation' : ''}</div>
     </section>
     <section class="login-panel"><div class="login-box stack gap-lg">
       <div><h2 style="font-size:24px">Sign in</h2><p class="muted">Use your staff account to continue.</p></div>
@@ -113,7 +116,7 @@ function renderLogin() {
       </form>
       ${META.demo && META.demoAccounts.length ? `<div><div class="label mb-sm">Demo accounts — click to sign in</div>
         <div class="demo-accounts">${META.demoAccounts.map((a) => `<button class="demo-acc" data-u="${h(a.username)}" data-p="${h(a.password)}" type="button">${avatar(a.name)}<div class="grow" style="min-width:0"><div class="n truncate">${h(a.name)}</div><div class="r truncate">${h(a.role)}${a.active ? '' : ' · deactivated'}</div><div class="r mono">${h(a.username)} / ${h(a.password)}</div></div></button>`).join('')}</div></div>` : ''}
-    </div></section></div>`;
+    </div>${credit()}</section></div>`;
   const form = $('#login-form');
   bindForm(form, async (d) => { await login(d.username, d.password); afterLogin(); });
   $$('.demo-acc').forEach((b) => b.addEventListener('click', async () => {
@@ -122,6 +125,25 @@ function renderLogin() {
     try { await login(b.dataset.u, b.dataset.p); afterLogin(); } catch (e) { showFormError(form, e); } finally { b.removeAttribute('aria-busy'); }
   }));
   if (window.matchMedia('(min-width: 721px)').matches) $('#lg-user').focus();
+}
+/* Login illustration: a phone running the ERP, with feature chips floating around it (decorative) */
+function heroPhone(shop) {
+  const bars = [38, 55, 46, 70, 62, 84, 100];
+  return `<div class="hero-stage" aria-hidden="true">
+    <div class="hero-glow"></div>
+    <div class="hero-phone"><div class="hp-island"></div><div class="hp-screen">
+      <div class="hp-status"><span>9:41</span><span>5G ▮▮▮</span></div>
+      <div class="hp-head"><div class="hp-logo">${icon('phone')}</div><div class="truncate"><b>${h(shop)}</b><small>Today</small></div></div>
+      <div class="hp-kpi"><small>Sales today</small><b>14 phones sold</b><span>${icon('chart', 'ic-sm')} +18% this week</span></div>
+      <div class="hp-bars">${bars.map((v, i) => `<i style="height:${v}%;animation-delay:${i * 0.08}s"></i>`).join('')}</div>
+      <div class="hp-row"><div class="hp-ic blue">${icon('phone')}</div><div class="grow truncate"><b>Smartphone 128GB</b><small class="mono">IMEI 35•••• 4821</small></div><span class="hp-tag green">12 mo</span></div>
+      <div class="hp-row"><div class="hp-ic green">${icon('wrench')}</div><div class="grow truncate"><b>Screen repair</b><small>Ready for pickup</small></div><span class="hp-tag blue">Ready</span></div>
+      <div class="hp-row"><div class="hp-ic dark">${icon('shield')}</div><div class="grow truncate"><b>Warranty claim</b><small>Unit replaced</small></div><span class="hp-tag">${icon('check', 'ic-sm')}</span></div>
+    </div></div>
+    <div class="hero-chip c1">${icon('scan')}<span>IMEI verified</span></div>
+    <div class="hero-chip c2">${icon('shield')}<span>Warranty · 12 months</span></div>
+    <div class="hero-chip c3">${icon('receipt')}<span>Invoice printed</span></div>
+  </div>`;
 }
 function afterLogin() {
   $('#app').innerHTML = '';
@@ -174,6 +196,7 @@ function renderShell() {
       </header>
       ${META.demo ? `<div class="demo-ribbon no-print">${icon('sparkles', 'ic-sm')}<span class="grow truncate"><b>Demo</b><span class="ribbon-long"> mode — signed in as</span><span class="ribbon-short"> ·</span> <b>${h(currentUser.name)}</b> (${h(role.name)})<span class="ribbon-long">. Demo installation.</span></span><button class="btn btn-xs" data-action="switch-user">${icon('swap', 'ic-sm')} Switch user</button></div>` : ''}
       <main class="content" id="content" tabindex="-1"></main>
+      ${credit()}
     </div></div>`;
   setupSearch();
   SB.init();
@@ -193,6 +216,11 @@ function updateChrome() {
   const nc = $('#notif-count'); if (nc) { nc.textContent = n; nc.classList.toggle('hidden', !n); }
 }
 function closeDropdowns() { $$('.dropdown').forEach((d) => d.classList.add('hidden')); const r = $('#gs-results'); r && r.classList.add('hidden'); }
+
+/* Developer credit, bottom of the login page and of every screen */
+function credit() {
+  return '<footer class="app-credit no-print">Powered by Grow More Solutions Pvt Ltd · <a href="tel:+94779895511">077 989 5511</a></footer>';
+}
 
 /* Phone bottom bar: the 4 most-used screens this role may open + Menu */
 function bottomNav() {
