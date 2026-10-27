@@ -217,7 +217,7 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained()->restrictOnDelete();
             $table->foreignId('device_id')->nullable()->constrained()->nullOnDelete();
             $table->integer('qty')->default(0);
-            $table->string('type', 40);
+            $table->string('type', 40); 
             $table->string('reason');
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending')->index();
             $table->foreignId('requested_by')->nullable()->constrained('users')->nullOnDelete();
