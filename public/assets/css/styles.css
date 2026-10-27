@@ -242,6 +242,7 @@ textarea.input { height: auto; min-height: 76px; padding: 9px 12px; resize: vert
   transition: transform .25s ease;
 }
 .brand { display: flex; align-items: center; gap: 10px; height: var(--topbar-h); padding: 0 18px; border-bottom: 1px solid rgba(255,255,255,.06); }
+.brand-img { background: none !important; object-fit: contain; }
 .brand-logo { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, var(--brand) 0%, var(--brand) 45%, var(--brand-green) 100%); display: grid; place-items: center; color: #fff; flex-shrink: 0; }
 .brand-name { font-weight: 700; color: #fff; font-size: 15px; line-height: 1.1; }
 .brand-sub { font-size: 11px; color: var(--sidebar-muted); }
@@ -477,6 +478,7 @@ a.list-row:hover { background: var(--surface-2); text-decoration: none; }
 .lg-inner { position: relative; z-index: 2; max-width: 1440px; min-height: 100vh; margin: 0 auto; padding: 36px 56px 64px; display: grid; grid-template-columns: minmax(0, 1fr) 420px; grid-template-rows: auto 1fr; column-gap: 40px; }
 .lg-brand { grid-column: 1 / -1; padding: 0; border: 0; height: auto; }
 .lg-brand .brand-sub { color: #9aa3ad; }
+.lg-brand .brand-logo { width: 46px; height: 46px; }
 .lg-copy { position: relative; z-index: 2; align-self: center; max-width: 540px; display: flex; flex-direction: column; gap: 20px; }
 .lg-eyebrow { font-size: 12.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #8fd3f0; }
 .lg-copy h1 { margin: 0; font-size: clamp(38px, 3.9vw, 60px); line-height: 1.03; letter-spacing: -.03em; font-weight: 800; color: #fff; }

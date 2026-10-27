@@ -286,7 +286,7 @@ const PRINT_CSS = `
   *{box-sizing:border-box} body{font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;color:#0f172a;margin:0;padding:28px;font-size:12.5px;line-height:1.45}
   h1{font-size:20px;margin:0} h2{font-size:15px;margin:0 0 6px} .muted{color:#64748b} .right{text-align:right} .center{text-align:center}
   .head{display:flex;justify-content:space-between;gap:20px;border-bottom:3px solid #29abe2;padding-bottom:14px;margin-bottom:16px}
-  .brand{display:flex;gap:12px;align-items:center} .logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#29abe2 45%,#39b54a);color:#161616;display:grid;place-items:center;font-weight:800;font-size:16px}
+  .brand{display:flex;gap:12px;align-items:center} .logo-img{width:54px;height:54px;object-fit:contain} .logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#29abe2 45%,#39b54a);color:#161616;display:grid;place-items:center;font-weight:800;font-size:16px}
   .doc-title{font-size:18px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px}
   .box{border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px} .box h4{margin:0 0 4px;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:#64748b}
@@ -309,7 +309,7 @@ function printDoc(title, html) {
 }
 function docHeader(docTitle, meta) {
   const s = db.settings;
-  return `<div class="head"><div class="brand"><div class="logo">${h(initials(s.shopName))}</div><div><h1>${h(s.shopName)}</h1><div class="muted">${h(s.address)} · ${h(s.phone)}</div><div class="muted">${h(s.email)} · Tax ID ${h(s.taxId)}</div></div></div>
+  return `<div class="head"><div class="brand"><img class="logo-img" src="${location.origin}/assets/img/logo-mark.png" alt=""><div><h1>${h(s.shopName)}</h1><div class="muted">${h(s.address)} · ${h(s.phone)}</div><div class="muted">${h(s.email)}${s.taxId ? ` · Tax ID ${h(s.taxId)}` : ''}</div></div></div>
     <div class="right"><div class="doc-title">${docTitle}</div>${meta}</div></div>`;
 }
 function docCustomer(cid, extra = '') {

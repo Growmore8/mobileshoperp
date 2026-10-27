@@ -99,7 +99,7 @@ function renderLogin() {
   $('#app').innerHTML = `<div class="login">
     <div class="lg-bg" aria-hidden="true"><div class="lg-photo"></div><i class="b1"></i><i class="b2"></i></div>
     <div class="lg-inner">
-      <div class="brand lg-brand"><div class="brand-logo" style="color:#161616">${icon('phone')}</div><div><div class="brand-name">${h(shop)}</div><div class="brand-sub">MobiCore ERP</div></div></div>
+      <div class="brand lg-brand"><img class="brand-logo brand-img" src="assets/img/logo-mark.png" alt=""><div><div class="brand-name">${h(shop)}</div><div class="brand-sub">MobiCore ERP</div></div></div>
       <section class="lg-copy">
         <div class="lg-eyebrow">Sales · Stock · Repairs · Warranty</div>
         <h1>Every phone. Every IMEI. <span class="hero-grad">Every warranty.</span></h1>
@@ -163,7 +163,7 @@ function renderShell() {
   }).join('');
   $('#app').innerHTML = `<div class="shell">
     <aside class="sidebar" aria-label="Main navigation">
-      <div class="brand"><div class="brand-logo" style="color:#161616">${icon('phone')}</div><div style="min-width:0"><div class="brand-name truncate">${h(db.settings.shopName)}</div><div class="brand-sub">MobiCore ERP</div></div></div>
+      <div class="brand"><img class="brand-logo brand-img" src="assets/img/logo-mark.png" alt=""><div style="min-width:0"><div class="brand-name truncate">${h(db.settings.shopName)}</div><div class="brand-sub">MobiCore ERP</div></div></div>
       <nav class="nav">${nav}</nav>
       <div class="sidebar-foot"><div class="user-card">${avatar(currentUser.name)}<div class="grow" style="min-width:0"><div class="name truncate">${h(currentUser.name)}</div><div class="role truncate">${h(role.name)}</div></div><button class="icon-btn" style="color:#94a3b8" data-action="logout" aria-label="Sign out" data-tip="Sign out">${icon('logout')}</button></div></div>
     </aside>
@@ -428,7 +428,7 @@ async function boot() {
   try { theme = localStorage.getItem(THEME_KEY); } catch (e) { /* ignore */ }
   if (!theme) theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   document.documentElement.dataset.theme = theme;
-  $('#app').innerHTML = `<div class="boot"><div class="brand-logo" style="color:#161616;width:48px;height:48px">${icon('phone', 'ic-lg')}</div><div class="muted small">Loading…</div></div>`;
+  $('#app').innerHTML = `<div class="boot"><img class="brand-logo brand-img" style="width:56px;height:56px" src="assets/img/logo-mark.png" alt=""><div class="muted small">Loading…</div></div>`;
   await loadMeta();
   if (await restoreSession()) render(); else renderLogin();
 }

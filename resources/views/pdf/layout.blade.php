@@ -37,7 +37,8 @@
 @php($s = $settings)
 <div class="foot">{{ $s['shop_name'] ?? '' }} · {{ $s['phone'] ?? '' }} · Generated {{ now()->format('d M Y, H:i') }}</div>
 <table class="head"><tr>
-  <td style="width:46px;vertical-align:top"><div class="logo">{{ $initials }}</div></td>
+  @php($logoFile = public_path('assets/img/logo-mark-print.jpg'))
+  <td style="width:62px;vertical-align:top">@if(is_file($logoFile))<img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents($logoFile)) }}" style="width:54px;height:54px">@else<div class="logo">{{ $initials }}</div>@endif</td>
   <td style="vertical-align:top;padding-left:8px">
     <h1>{{ $s['shop_name'] ?? '' }}</h1>
     <div class="muted">{{ $s['address'] ?? '' }} · {{ $s['phone'] ?? '' }}</div>
