@@ -545,14 +545,18 @@ a.list-row:hover { background: var(--surface-2); text-decoration: none; }
 @media (max-width: 1366px) { .lg-inner { padding: 28px 44px 52px; } .lg-card { padding: 26px 28px; } .lg-sub { margin-bottom: 16px; } }
 @media (max-width: 1180px) { .lg-inner { grid-template-columns: minmax(0, 1fr) 400px; } }
 @media (max-width: 860px) {
-  .lg-inner { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; min-height: 0; row-gap: 20px; padding: 24px 16px 8px; }
-  .lg-copy { gap: 12px; }
+  /* phones / small tablets: fill the screen height and centre the content instead of leaving the bottom empty */
+  .login { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+  .lg-inner { flex: 1 0 auto; width: 100%; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto; align-content: center; min-height: 0; row-gap: 22px; padding: 28px 18px 12px; }
+  .lg-brand { margin-bottom: 6px; width: 100%; max-width: 480px; justify-self: center; }
+  .lg-copy { gap: 12px; max-width: 480px; width: 100%; justify-self: center; }
   .lg-copy h1 { font-size: 34px; }
-  .lg-copy p { display: none; }
+  .lg-copy p { font-size: 14.5px; line-height: 1.55; }
   .lg-card { grid-column: auto; grid-row: auto; width: 100%; max-width: 480px; justify-self: center; padding: 26px 20px; }
   .login > .app-credit { position: static; padding: 10px 16px 18px; }
 }
-@media (max-width: 560px) { .lg-tags { display: none; } .lg-copy h1 { font-size: 30px; } .lg-card h2 { font-size: 26px; } }
+@media (max-width: 560px) { .lg-tags { display: none; } .lg-copy h1 { font-size: 30px; } .lg-card h2 { font-size: 26px; } .lg-brand { width: auto; justify-self: center; } .lg-copy { text-align: center; } }
+@media (max-width: 380px) { .lg-copy h1 { font-size: 27px; } .lg-copy p { font-size: 13.5px; } .lg-inner { row-gap: 18px; padding-top: 22px; } }
 .app-credit { text-align: center; font-size: 11.5px; color: var(--muted); padding: 10px 16px 14px; }
 .app-credit a { color: inherit; font-weight: 600; }
 .demo-accounts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -780,7 +784,8 @@ a.list-row:hover { background: var(--surface-2); text-decoration: none; }
   .topbar { gap: 6px; padding: 0 8px 0 12px; }
   .top-actions { gap: 0; }
   .top-actions [data-action=theme] { display: none; }
-  .page-title { min-width: 0; }
+  .page-title { min-width: 0; flex: 1 1 auto; }
+  .top-actions { margin-left: auto; flex-shrink: 0; }
   #pos-hint { display: none; }
   .content { padding: 16px 12px 12px; }
   .main > .app-credit { font-size: 10.5px; }
@@ -795,8 +800,10 @@ a.list-row:hover { background: var(--surface-2); text-decoration: none; }
 .sheet-grip { width: 42px; height: 5px; border-radius: 3px; background: var(--border); margin: 8px auto 2px; flex-shrink: 0; }
 .sheet-user { display: flex; align-items: center; gap: 10px; padding: 8px 12px 10px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
 .sheet-body { overflow-y: auto; padding: 4px 12px 16px; overscroll-behavior: contain; }
-.sheet-group { padding-top: 12px; }
-.sheet-title { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 0 6px 8px; }
+.sheet-group { padding: 12px 0 6px; }
+.sheet-group + .sheet-group { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 14px; }
+.sheet-title { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--primary); padding: 0 6px 10px; }
+.sheet-title::before { content: ""; width: 4px; height: 14px; border-radius: 2px; background: linear-gradient(#29abe2, #39b54a); }
 .sheet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
 .sheet-tile { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 12px 4px 10px; border-radius: 14px; color: var(--text); font-size: 12.5px; font-weight: 600; text-align: center; line-height: 1.25; text-decoration: none; -webkit-tap-highlight-color: transparent; }
 .sheet-tile:hover, .sheet-tile:active { background: var(--surface-2); text-decoration: none; }
