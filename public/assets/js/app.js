@@ -103,7 +103,7 @@ function renderLogin() {
       <section class="lg-copy">
         <div class="lg-eyebrow">Sales · Stock · Repairs · Warranty</div>
         <h1>Every phone. Every IMEI. <span class="hero-grad">Every warranty.</span></h1>
-        <p>Sell the latest iPhone and Galaxy models, manage repairs and handle warranty claims, with every unit tracked by its IMEI from the supplier to the customer.</p>
+        <p>Sell phones and accessories, manage repairs and handle warranty claims, with every unit tracked by its IMEI from the supplier to the customer.</p>
         <div class="lg-tags">${[['scan', 'IMEI tracking'], ['wrench', 'Repairs'], ['shield', 'Warranty claims'], ['chart', 'Live reports']].map(([i, t]) => `<span class="lg-tag">${icon(i)}${t}</span>`).join('')}</div>
       </section>
       <section class="lg-card">
