@@ -128,12 +128,14 @@ function renderLogin() {
   }));
   if (window.matchMedia('(min-width: 721px)').matches) $('#lg-user').focus();
 }
-/* Login illustration: a flagship iPhone (back) and Galaxy Ultra (front, running the ERP), drawn in CSS — decorative */
+/* Login illustration: a fan of iPhone and Galaxy handsets in several colours, the front one running the ERP — drawn in CSS, decorative */
 function heroPhone(shop) {
   const bars = [38, 55, 46, 70, 62, 84, 100];
   return `<div class="hero-stage" aria-hidden="true">
     <div class="hero-glow"></div>
-    <div class="dev dev-iphone"><div class="ip-cam"><i class="l1"></i><i class="l2"></i><i class="l3"></i><b class="fl"></b><b class="ld"></b></div><div class="ip-ring"></div></div>
+    <div class="dev dev-gback"><div class="gb-cam"><i></i><i></i><i></i></div><b class="gb-flash"></b></div>
+    <div class="dev dev-iphone ip-blue"><div class="ip-cam"><i class="l1"></i><i class="l2"></i><i class="l3"></i><b class="fl"></b><b class="ld"></b></div><div class="ip-ring"></div></div>
+    <div class="dev dev-iphone ip-orange"><div class="ip-cam"><i class="l1"></i><i class="l2"></i><i class="l3"></i><b class="fl"></b><b class="ld"></b></div><div class="ip-ring"></div></div>
     <div class="dev dev-galaxy"><div class="gx-punch"></div><div class="hp-screen">
       <div class="hp-status"><span>9:41</span><span>5G ▮▮▮</span></div>
       <div class="hp-head"><div class="hp-logo">${icon('phone')}</div><div class="truncate"><b>${h(shop)}</b><small>Today</small></div></div>
