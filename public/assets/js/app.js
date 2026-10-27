@@ -100,15 +100,17 @@ function renderLogin() {
     <section class="login-hero">
       <div class="brand" style="padding:0;border:0;height:auto"><div class="brand-logo" style="color:#161616">${icon('phone')}</div><div><div class="brand-name">${h(shop)}</div><div class="brand-sub" style="color:#9aa3ad">MobiCore ERP</div></div></div>
       <div class="hero-main">
-        <div class="stack gap-lg hero-copy"><h1>Run the whole shop — sales, IMEI stock, repairs and warranties — from one screen.</h1>
-          <p>Billing & POS, IMEI-level inventory, supplier purchases, repair job tracking, separate product and repair warranties, claims, reports and role-based staff access.</p>
-          <div class="hero-feats">${[['scan', 'IMEI & serial tracking'], ['wrench', '11-stage repair workflow'], ['shield', 'Product + repair warranties'], ['key', 'Granular permissions'], ['receipt', 'Invoices, PDF & print'], ['chart', 'Sales, stock & repair reports']].map(([i, t]) => `<div class="hero-feat">${icon(i)}<span>${t}</span></div>`).join('')}</div></div>
+        <div class="stack gap-lg hero-copy">
+          <div class="hero-eyebrow">${icon('sparkles', 'ic-sm')} Sales · Stock · Repairs · Warranty</div>
+          <h1>Every phone. Every IMEI. <span class="hero-grad">Every warranty.</span></h1>
+          <p>Sell the latest iPhone and Galaxy models, book repairs and settle warranty claims — with every unit tracked by its IMEI, from supplier to customer.</p>
+          <div class="hero-feats">${[['scan', 'IMEI tracking'], ['wrench', 'Repair workflow'], ['shield', 'Product & repair warranty'], ['key', 'Staff permissions'], ['receipt', 'Invoices & PDF'], ['chart', 'Live reports']].map(([i, t]) => `<div class="hero-feat">${icon(i)}<span>${t}</span></div>`).join('')}</div></div>
         ${heroPhone(shop)}
       </div>
       <div class="small" style="color:#8a929c">${META.demo ? 'Demo installation' : ''}</div>
     </section>
     <section class="login-panel"><div class="login-box stack gap-lg">
-      <div><h2 style="font-size:24px">Sign in</h2><p class="muted">Use your staff account to continue.</p></div>
+      <div><h2 style="font-size:26px">Welcome back</h2><p class="muted">Sign in to ${h(shop)} with your staff account.</p></div>
       <form id="login-form" class="stack" novalidate>
         <div class="field"><label for="lg-user">Username</label><input class="input" id="lg-user" name="username" autocomplete="username" required></div>
         <div class="field"><label for="lg-pass">Password</label><input class="input" id="lg-pass" name="password" type="password" autocomplete="current-password" required></div>
@@ -126,23 +128,24 @@ function renderLogin() {
   }));
   if (window.matchMedia('(min-width: 721px)').matches) $('#lg-user').focus();
 }
-/* Login illustration: a phone running the ERP, with feature chips floating around it (decorative) */
+/* Login illustration: a flagship iPhone (back) and Galaxy Ultra (front, running the ERP), drawn in CSS — decorative */
 function heroPhone(shop) {
   const bars = [38, 55, 46, 70, 62, 84, 100];
   return `<div class="hero-stage" aria-hidden="true">
     <div class="hero-glow"></div>
-    <div class="hero-phone"><div class="hp-island"></div><div class="hp-screen">
+    <div class="dev dev-iphone"><div class="ip-cam"><i class="l1"></i><i class="l2"></i><i class="l3"></i><b class="fl"></b><b class="ld"></b></div><div class="ip-ring"></div></div>
+    <div class="dev dev-galaxy"><div class="gx-punch"></div><div class="hp-screen">
       <div class="hp-status"><span>9:41</span><span>5G ▮▮▮</span></div>
       <div class="hp-head"><div class="hp-logo">${icon('phone')}</div><div class="truncate"><b>${h(shop)}</b><small>Today</small></div></div>
       <div class="hp-kpi"><small>Sales today</small><b>14 phones sold</b><span>${icon('chart', 'ic-sm')} +18% this week</span></div>
       <div class="hp-bars">${bars.map((v, i) => `<i style="height:${v}%;animation-delay:${i * 0.08}s"></i>`).join('')}</div>
-      <div class="hp-row"><div class="hp-ic blue">${icon('phone')}</div><div class="grow truncate"><b>Smartphone 128GB</b><small class="mono">IMEI 35•••• 4821</small></div><span class="hp-tag green">12 mo</span></div>
-      <div class="hp-row"><div class="hp-ic green">${icon('wrench')}</div><div class="grow truncate"><b>Screen repair</b><small>Ready for pickup</small></div><span class="hp-tag blue">Ready</span></div>
+      <div class="hp-row"><div class="hp-ic blue">${icon('phone')}</div><div class="grow truncate"><b>iPhone Pro 256GB</b><small class="mono">IMEI 35•••• 4821</small></div><span class="hp-tag green">12 mo</span></div>
+      <div class="hp-row"><div class="hp-ic green">${icon('wrench')}</div><div class="grow truncate"><b>Galaxy screen repair</b><small>Ready for pickup</small></div><span class="hp-tag blue">Ready</span></div>
       <div class="hp-row"><div class="hp-ic dark">${icon('shield')}</div><div class="grow truncate"><b>Warranty claim</b><small>Unit replaced</small></div><span class="hp-tag">${icon('check', 'ic-sm')}</span></div>
     </div></div>
-    <div class="hero-chip c1">${icon('scan')}<span>IMEI verified</span></div>
-    <div class="hero-chip c2">${icon('shield')}<span>Warranty · 12 months</span></div>
-    <div class="hero-chip c3">${icon('receipt')}<span>Invoice printed</span></div>
+    <div class="hero-chip c1">${icon('phone')}<span>Latest iPhone · in stock</span></div>
+    <div class="hero-chip c2">${icon('shield')}<span>Galaxy Ultra · 12-mo warranty</span></div>
+    <div class="hero-chip c3">${icon('scan')}<span>IMEI verified</span></div>
   </div>`;
 }
 function afterLogin() {
