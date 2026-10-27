@@ -75,7 +75,10 @@ function render() {
   const allowed = !def.perm || can(...def.perm);
   $('#page-title').textContent = def.title;
   document.title = `${def.title} · ${db.settings.shopName}`;
-  $$('.nav-link, .bn-item').forEach((a) => a.classList.toggle('active', a.dataset.key === (def.nav || page)));
+  const navKey = def.nav || page;
+  $$('.nav-link, .bn-item[data-key]').forEach((a) => a.classList.toggle('active', a.dataset.key === navKey));
+  const moreBtn = $('.bn-item[data-action=open-more]'); if (moreBtn) moreBtn.classList.toggle('active', !BN_KEYS.includes(navKey));
+  if (path !== lastPath) closeMoreSheet();
   if (!allowed) {
     content.innerHTML = `<div class="card"><div class="card-body">${emptyState('lock', 'Access restricted', `Your role (${roleOf().name}) does not have permission to view ${def.title}. Ask an administrator to update your permissions.`, `<a class="btn" href="${landing()}">Back to start page</a>`)}</div></div>`;
     return;
@@ -144,6 +147,7 @@ function afterLogin() {
   render();
 }
 async function signOut(message) {
+  closeMoreSheet();
   await logout();
   Object.keys(DT).forEach((k) => delete DT[k]);
   POS.items = []; POS.customerId = ''; POS.discount = 0;
@@ -172,7 +176,8 @@ function renderShell() {
     <div class="main">
       <header class="topbar">
         <button class="icon-btn menu-btn" data-action="open-nav" aria-label="Show or hide menu" data-tip="Show / hide menu">${icon('menu')}</button>
-        <div class="page-title" id="page-title"></div>
+        <img class="topbar-logo" src="assets/img/logo-mark.png" alt="">
+        <div class="page-title truncate" id="page-title"></div>
         <div class="global-search" id="gsearch">
           <div class="input-icon">${icon('search')}<input class="input" id="gs-input" type="search" placeholder="Search IMEI, invoice, job no., customer…  ( / )" autocomplete="off" aria-label="Global search"></div>
           <div class="search-results hidden" id="gs-results"></div>
@@ -198,10 +203,11 @@ function renderShell() {
 function updateChrome() {
   NAV.forEach((g) => g.items.forEach((it) => {
     if (!it.count) return;
-    const el = document.querySelector(`[data-count="${it.key}"]`);
-    if (!el) return;
-    const n = it.count(); el.textContent = n; el.hidden = !n;
+    const n = it.count();
+    $$(`[data-count="${it.key}"]`).forEach((el) => { el.textContent = n; el.hidden = !n; });
   }));
+  const dot = $('#bn-more-dot');
+  if (dot) dot.hidden = !NAV.some((g) => g.items.some((it) => it.count && it.warn && !BN_KEYS.includes(it.key) && can(...it.perm) && it.count() > 0));
   const n = getNotifications().length;
   const nc = $('#notif-count'); if (nc) { nc.textContent = n; nc.classList.toggle('hidden', !n); }
 }
@@ -213,13 +219,51 @@ function credit() {
   return `<footer class="app-credit no-print">© ${new Date().getFullYear()} Singtel Mobile. All rights reserved. · v${APP_VERSION} · Developed by Grow More Solutions Pvt Ltd · <a href="tel:+94779895511">077 989 5511</a></footer>`;
 }
 
-/* Phone bottom bar: the 4 most-used screens this role may open + Menu */
+/* Tablet & phone bottom bar: the 4 most-used screens this role may open + More (everything else) */
+let BN_KEYS = [];
 function bottomNav() {
   const all = NAV.flatMap((g) => g.items);
   const pick = ['dashboard', 'pos', 'repairs', 'warranties', 'sales', 'inventory', 'imei', 'claims', 'customers', 'purchases', 'reports']
     .map((k) => all.find((it) => it.key === k)).filter((it) => it && can(...it.perm)).slice(0, 4);
+  BN_KEYS = pick.map((it) => it.key);
   const short = { dashboard: 'Home', pos: 'POS', repairs: 'Repairs', warranties: 'Warranty', sales: 'Sales', inventory: 'Stock', imei: 'IMEI', claims: 'Claims', customers: 'Customers', purchases: 'Purchases', reports: 'Reports' };
-  return `<nav class="bottom-nav no-print" aria-label="Quick navigation">${pick.map((it) => `<a class="bn-item" href="#/${it.key}" data-key="${it.key}">${icon(it.icon)}<span>${short[it.key]}</span></a>`).join('')}<button class="bn-item" data-action="open-nav" aria-label="Open menu">${icon('menu')}<span>Menu</span></button></nav>`;
+  return `<nav class="bottom-nav no-print" aria-label="Quick navigation">${pick.map((it) => `<a class="bn-item" href="#/${it.key}" data-key="${it.key}">${icon(it.icon)}<span>${short[it.key]}</span>${it.count ? `<span class="bn-badge ${it.warn ? 'warn' : ''}" data-count="${it.key}" hidden></span>` : ''}</a>`).join('')}<button class="bn-item" data-action="open-more" aria-label="More screens and account">${icon('grid')}<span>More</span><span class="bn-dot" id="bn-more-dot" hidden></span></button></nav>`;
+}
+
+/* "More" sheet: the screens not on the bottom bar, grouped like the desktop menu, plus account actions */
+function closeMoreSheet() {
+  const s = $('#more-sheet'); if (!s) return;
+  s.classList.remove('open'); document.body.classList.remove('sheet-open');
+  document.removeEventListener('keydown', sheetKey);
+  setTimeout(() => s.remove(), 230);
+}
+function sheetKey(e) { if (e.key === 'Escape') closeMoreSheet(); }
+function openMoreSheet() {
+  if ($('#more-sheet')) { closeMoreSheet(); return; }
+  const cur = parseHash().page; const dark = document.documentElement.dataset.theme === 'dark';
+  const groups = NAV.map((g) => ({ title: g.title, items: g.items.filter((it) => can(...it.perm) && !BN_KEYS.includes(it.key)) })).filter((g) => g.items.length);
+  const el = document.createElement('div');
+  el.id = 'more-sheet'; el.className = 'sheet-wrap no-print';
+  el.innerHTML = `<div class="sheet-scrim" data-action="close-more"></div>
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="More screens">
+      <div class="sheet-grip"></div>
+      <div class="sheet-user">${avatar(currentUser.name)}<div class="grow" style="min-width:0"><div class="bold truncate">${h(currentUser.name)}</div><div class="xs muted truncate">${h(roleOf().name)} · ${h(db.settings.shopName)}</div></div><button class="icon-btn" data-action="close-more" aria-label="Close">${icon('x')}</button></div>
+      <div class="sheet-body">
+        ${groups.map((g) => `<div class="sheet-group"><div class="sheet-title">${g.title}</div><div class="sheet-grid">${g.items.map((it) => { const n = it.count ? it.count() : 0; return `<a class="sheet-tile ${it.key === cur ? 'active' : ''}" href="#/${it.key}"><span class="sheet-ic">${icon(it.icon)}${n ? `<span class="sheet-badge ${it.warn ? 'warn' : ''}">${n}</span>` : ''}</span><span>${it.label}</span></a>`; }).join('')}</div></div>`).join('')}
+        <div class="sheet-group"><div class="sheet-title">Account</div><div class="sheet-list">
+          <button class="menu-item" data-action="theme-sheet">${icon(dark ? 'sun' : 'moon', 'ic-sm')} ${dark ? 'Light mode' : 'Dark mode'}</button>
+          <button class="menu-item" data-action="my-perms">${icon('key', 'ic-sm')} My permissions</button>
+          <button class="menu-item" data-action="change-password">${icon('lock', 'ic-sm')} Change password</button>
+          ${META.demo ? `<button class="menu-item" data-action="switch-user">${icon('swap', 'ic-sm')} Switch user (demo)</button>` : ''}
+          <button class="menu-item danger-text" data-action="logout">${icon('logout', 'ic-sm')} Sign out</button>
+        </div></div>
+      </div>
+    </div>`;
+  document.body.appendChild(el); document.body.classList.add('sheet-open');
+  document.addEventListener('keydown', sheetKey);
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('open')));
+  // tapping a screen or an account action closes the sheet (the action itself still runs)
+  el.addEventListener('click', (e) => { if (e.target.closest('.sheet-tile, .menu-item')) closeMoreSheet(); });
 }
 
 /* ---------------- Sidebar: hide button + auto-close ---------------- */
@@ -301,6 +345,9 @@ Object.assign(ACT, {
     SB.touch();
   },
   'close-nav': () => document.body.classList.remove('nav-open'),
+  'open-more': () => openMoreSheet(),
+  'close-more': () => closeMoreSheet(),
+  'theme-sheet': () => { const b = $('.top-actions [data-action=theme]'); if (b) ACT.theme(b); },
   'toggle-search': () => { const g = $('#gsearch'); g.classList.toggle('collapsed'); if (!g.classList.contains('collapsed')) $('#gs-input').focus(); },
   theme: (el) => {
     const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
