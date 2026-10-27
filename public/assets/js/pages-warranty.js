@@ -55,7 +55,7 @@ PAGES.warranties = {
       filters: [
         { key: 'st', label: 'Any status', options: Object.entries(TONES.warranty).map(([k, v]) => [k, v[0]]), fn: (w, v) => wStatus(w) === v },
         ...(tab === 'product' ? [{ key: 'prov', label: 'Any provider', options: ['Manufacturer', 'Distributor', 'Shop'], fn: (w, v) => w.provider === v }, { key: 'cat', label: 'Any category', options: db.categories.filter((c) => c.warrantyMonths || c.kind === 'phone').map((c) => [c.id, c.name]), fn: (w, v) => (find('products', w.productId) || {}).categoryId === v }] : []),
-        { key: 'exp', label: 'Any expiry', options: [['30', 'Expires in 30 days'], ['60', 'Expires in 60 days'], ['90', 'Expires in 90 days']], fn: (w, v) => { const d = daysUntil(warrantyEnd(w)); return d >= 0 && d <= Number(v); } },
+        { key: 'exp', label: 'Any expiry', options: [['30', 'Expires within 30 days'], ['60', 'Expires within 60 days'], ['90', 'Expires within 90 days']], fn: (w, v) => { const d = daysUntil(warrantyEnd(w)); return d >= 0 && d <= Number(v); } },
       ],
       columns: [
         { label: 'Warranty', cls: 'td-main', sort: (w) => w.no, render: (w) => `<div class="cell-main mono">${h(w.no)}</div><div class="cell-sub">${tab === 'repair' ? 'Job ' + h(w.jobNo) : 'Invoice ' + h(w.invoiceNo)}</div>`, csv: (w) => w.no },
@@ -151,7 +151,7 @@ function openClaimForm(warrantyId) {
         if (!w) return;
         const flags = { physical: f.physical.checked, liquid: f.liquid.checked, tampered: f.tampered.checked, unrelated: f.unrelated.checked };
         const e = checkEligibility(w, flags);
-        $('#cl-elig', el).innerHTML = e.eligible ? `<div class="alert alert-success">${icon('checkCircle')}<div><b>Eligible under warranty terms.</b> ${w.kind === 'repair' ? 'Active coverage: ' + e.activeComponents.map((c) => h(c.label)).join(', ') : `Valid until ${fmtDate(w.end)}.`} Final decision is made after inspection.</div></div>` : `<div class="alert alert-danger">${icon('xCircle')}<div><b>Likely not eligible:</b><ul style="margin:4px 0 0;padding-left:18px">${e.reasons.map((r) => `<li>${h(r)}</li>`).join('')}</ul><div class="xs mt-sm">You can still register the claim; an authorised user decides (goodwill override possible).</div></div></div>`;
+        $('#cl-elig', el).innerHTML = e.eligible ? `<div class="alert alert-success">${icon('checkCircle')}<div><b>Eligible under warranty terms.</b> ${w.kind === 'repair' ? 'Active coverage: ' + e.activeComponents.map((c) => h(c.label)).join(', ') : `Valid until ${fmtDate(w.end)}.`} The final decision is made after inspection.</div></div>` : `<div class="alert alert-danger">${icon('xCircle')}<div><b>Likely not eligible:</b><ul style="margin:4px 0 0;padding-left:18px">${e.reasons.map((r) => `<li>${h(r)}</li>`).join('')}</ul><div class="xs mt-sm">You can still register the claim; an authorised user decides (goodwill override possible).</div></div></div>`;
       };
       const select = (wid) => {
         w = find('warranties', wid);
@@ -313,7 +313,7 @@ function openReplacementForm(claimId) {
         const d = findDeviceByCode(e.target.value);
         if (!d) { beep(false); toast('No unit with that IMEI / serial.', 'error'); return; }
         if (d.status !== 'in_stock') { beep(false); toast(`${deviceCode(d)} is ${DEVICE_STATUS[d.status].toLowerCase()}.`, 'error'); return; }
-        if (!prods.some((p) => p.id === d.productId)) { beep(false); toast('That unit is a different product category.', 'error'); return; }
+        if (!prods.some((p) => p.id === d.productId)) { beep(false); toast('That unit is in a different product category.', 'error'); return; }
         beep(true); prodId = d.productId; $('#rp-prod', el).value = prodId; draw(); choose(d); e.target.value = '';
       });
       draw();

@@ -48,7 +48,7 @@ class WarrantyService
         if ($w->kind === 'repair') {
             $active = $w->components()->get()->filter(fn ($c) => $c->end_date->gte(Carbon::today()))->values();
             if ($active->isEmpty()) {
-                $reasons[] = 'All repair warranty components expired (latest '.$w->end_date->format('d M Y').').';
+                $reasons[] = 'All repair warranty components have expired (latest '.$w->end_date->format('d M Y').').';
             }
         } elseif ($w->end_date->lt(Carbon::today())) {
             $reasons[] = 'Warranty expired on '.$w->end_date->format('d M Y').'.';
@@ -302,7 +302,7 @@ class WarrantyService
             $w = Warranty::lockForUpdate()->findOrFail($c->warranty_id);
             $old = $w->device_id ? Device::lockForUpdate()->find($w->device_id) : null;
             if (! $old) {
-                Shop::fail('This warranty is not linked to a serialized unit (IMEI / serial).');
+                Shop::fail('This warranty is not linked to a serialised unit (IMEI / serial).');
             }
             if ($old->status !== 'sold') {
                 Shop::fail('The original unit is '.strtolower(Inventory::label($old->status)).' — it cannot be replaced.');

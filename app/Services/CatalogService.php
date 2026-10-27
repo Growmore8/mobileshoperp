@@ -95,7 +95,7 @@ class CatalogService
                 Shop::fail('Enter an amount above zero.');
             }
             if ($amount > $bal + 0.001) {
-                Shop::fail('Amount exceeds total outstanding ('.Shop::fmt($bal).').');
+                Shop::fail('Amount exceeds the total outstanding ('.Shop::fmt($bal).').');
             }
             $docs = Sale::where('customer_id', $c->id)->where('status', '!=', 'cancelled')->lockForUpdate()->get()
                 ->map(fn ($s) => ['doc' => $s, 'at' => $s->created_at, 'bal' => Totals::sale($s)['balance']])

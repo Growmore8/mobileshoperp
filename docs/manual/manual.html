@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Singtel Mobile ERP — User Manual V1.0.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 18mm 16mm 20mm; }
+  @page :first { margin: 0; }
+  :root { --blue: #29abe2; --blue-d: #157ab0; --green: #39b54a; --dark: #161616; --muted: #5f6873; --line: #dfe4ea; --soft: #f3f7fa; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Inter, "Segoe UI", Arial, sans-serif; color: var(--dark); font-size: 10.6pt; line-height: 1.55; }
+  h1, h2, h3 { line-height: 1.2; letter-spacing: -.01em; }
+  h1 { font-size: 22pt; margin: 0 0 4mm; padding-top: 2mm; }
+  h1 .num { display: inline-block; min-width: 11mm; height: 11mm; line-height: 11mm; margin-right: 3mm; text-align: center; border-radius: 3mm; background: linear-gradient(135deg, var(--blue), var(--green)); color: var(--dark); font-size: 14pt; vertical-align: 2px; }
+  h2 { font-size: 13.5pt; margin: 7mm 0 2.5mm; color: var(--blue-d); }
+  h3 { font-size: 11pt; margin: 5mm 0 1.5mm; }
+  p { margin: 0 0 2.6mm; }
+  .chapter { break-before: page; }
+  .lead { font-size: 11.5pt; color: #333a42; margin-bottom: 5mm; }
+  ol.steps { counter-reset: s; list-style: none; padding: 0; margin: 2mm 0 4mm; }
+  ol.steps > li { counter-increment: s; position: relative; padding: 0 0 2.2mm 10mm; }
+  ol.steps > li::before { content: counter(s); position: absolute; left: 0; top: .2mm; width: 6.4mm; height: 6.4mm; line-height: 6.4mm; border-radius: 50%; background: var(--blue); color: #fff; font-weight: 700; font-size: 8.5pt; text-align: center; }
+  ul { margin: 1mm 0 3mm; padding-left: 5mm; } li { margin-bottom: 1mm; }
+  b, strong { font-weight: 650; }
+  .ui { font-weight: 650; background: #eef3f7; border: 1px solid #d5dde5; border-radius: 1.2mm; padding: 0 1.4mm; white-space: nowrap; font-size: 9.6pt; }
+  .callout { border-radius: 2.5mm; padding: 3mm 4mm; margin: 3mm 0 4mm; break-inside: avoid; border-left: 1.4mm solid; font-size: 10pt; }
+  .callout b:first-child { display: block; margin-bottom: .8mm; }
+  .tip { background: #eaf7fc; border-color: var(--blue); }
+  .rule { background: #fff5e8; border-color: #f0a030; }
+  .warn { background: #fdecec; border-color: #d64545; }
+  figure { margin: 3mm 0 5mm; break-inside: avoid; }
+  figure img { width: 100%; display: block; border: 1px solid var(--line); border-radius: 2.5mm; box-shadow: 0 1mm 3mm rgba(22,22,22,.08); }
+  figure.half img { width: 62%; margin: 0 auto; }
+  figure.phone img { width: 34%; margin: 0 auto; }
+  figcaption { font-size: 8.8pt; color: var(--muted); margin-top: 1.5mm; text-align: center; }
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 5mm; font-size: 9.6pt; break-inside: auto; }
+  th { text-align: left; background: var(--soft); border-bottom: 1.5px solid #c9d3dc; padding: 2mm 2.4mm; font-size: 8.6pt; text-transform: uppercase; letter-spacing: .04em; color: #3b444d; }
+  td { border-bottom: 1px solid var(--line); padding: 2mm 2.4mm; vertical-align: top; }
+  tr { break-inside: avoid; }
+  .flow { display: flex; flex-wrap: wrap; gap: 1.6mm; margin: 2mm 0 4mm; }
+  .flow span { font-size: 8.8pt; font-weight: 600; padding: 1.2mm 2.6mm; border-radius: 10mm; background: #eaf7fc; border: 1px solid #b9e2f4; }
+  .flow span.opt { background: #f4f4f4; border-color: #ddd; color: #666; }
+  .flow span.end { background: #e7f6e9; border-color: #b6e2bc; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+  .card { border: 1px solid var(--line); border-radius: 2.5mm; padding: 3mm 4mm; break-inside: avoid; }
+  .card h3 { margin-top: 0; }
+  .muted { color: var(--muted); }
+  .small { font-size: 9pt; }
+
+  /* cover */
+  .cover { height: 297mm; position: relative; overflow: hidden; color: #fff; background:
+      radial-gradient(130mm 110mm at 0% 0%, rgba(41,171,226,.55), transparent 70%),
+      radial-gradient(120mm 110mm at 100% 100%, rgba(57,181,74,.45), transparent 70%), #10141a; padding: 26mm 22mm; display: flex; flex-direction: column; }
+  .cover .logo { display: flex; align-items: center; gap: 4mm; }
+  .cover .mark { width: 15mm; height: 15mm; border-radius: 4mm; background: linear-gradient(135deg, var(--blue), var(--green)); display: grid; place-items: center; }
+  .cover .mark i { width: 5.4mm; height: 9mm; border: 2px solid var(--dark); border-radius: 1.4mm; display: block; }
+  .cover .shop { font-size: 17pt; font-weight: 800; } .cover .sub { color: #a9b3be; font-size: 10pt; }
+  .cover .title { margin-top: auto; }
+  .cover .eyebrow { letter-spacing: .25em; text-transform: uppercase; font-size: 10pt; font-weight: 700; color: #8fd3f0; }
+  .cover h1 { font-size: 44pt; line-height: 1.02; margin: 5mm 0 6mm; letter-spacing: -.03em; color: #fff; }
+  .cover h1 span { background: linear-gradient(90deg, var(--blue), var(--green)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .cover .desc { font-size: 12.5pt; color: #cfd6de; max-width: 140mm; }
+  .cover .meta { margin-top: 16mm; display: flex; gap: 10mm; font-size: 9.5pt; color: #a9b3be; }
+  .cover .meta b { display: block; color: #fff; font-size: 11pt; }
+  .cover .foot { margin-top: 16mm; padding-top: 6mm; border-top: 1px solid rgba(255,255,255,.18); font-size: 9.5pt; color: #a9b3be; display: flex; justify-content: space-between; }
+
+  /* contents */
+  .toc { columns: 2; column-gap: 10mm; margin-top: 4mm; }
+  .toc a { display: flex; gap: 3mm; padding: 2mm 0; border-bottom: 1px dashed var(--line); color: var(--dark); text-decoration: none; break-inside: avoid; }
+  .toc a span:first-child { color: var(--blue-d); font-weight: 700; min-width: 7mm; }
+</style>
+</head>
+<body>
+
+<!-- ================= COVER ================= -->
+<section class="cover">
+  <div class="logo"><div class="mark"><i></i></div><div><div class="shop">Singtel Mobile</div><div class="sub">No.158/c, Main Street, Matale · 077 679 7495</div></div></div>
+  <div class="title">
+    <div class="eyebrow">MobiCore ERP · User Manual</div>
+    <h1>How to run the shop<br>with <span>your ERP</span></h1>
+    <p class="desc">A step-by-step guide for owners, managers, sales staff, technicians and store keepers. It covers sales, IMEI stock, purchases, repairs, warranties and reports.</p>
+    <div class="meta"><div><b>Version 1.0.0</b>October 2026</div><div><b>System address</b>erp.singtelmobile.com</div><div><b>Applies to</b>Web app on PC, tablet &amp; phone</div></div>
+  </div>
+  <div class="foot"><span>© 2026 Singtel Mobile · Developed by <b style="color:#fff">Grow More Solutions Pvt Ltd</b></span><span>Support: 077 989 5511</span></div>
+</section>
+
+<!-- ================= CONTENTS ================= -->
+<section class="chapter">
+  <h1>Contents</h1>
+  <div class="toc">
+    <a href="#c1"><span>1</span><span>Getting started</span></a>
+    <a href="#c2"><span>2</span><span>Who can do what (roles)</span></a>
+    <a href="#c3"><span>3</span><span>Everyday quick guide</span></a>
+    <a href="#c4"><span>4</span><span>Selling at the POS</span></a>
+    <a href="#c5"><span>5</span><span>Invoices, returns &amp; refunds</span></a>
+    <a href="#c6"><span>6</span><span>Customers</span></a>
+    <a href="#c7"><span>7</span><span>Products</span></a>
+    <a href="#c8"><span>8</span><span>Receiving stock &amp; purchases</span></a>
+    <a href="#c9"><span>9</span><span>Stock control &amp; stock checks</span></a>
+    <a href="#c10"><span>10</span><span>IMEI Tracker</span></a>
+    <a href="#c11"><span>11</span><span>Repairs</span></a>
+    <a href="#c12"><span>12</span><span>Warranties</span></a>
+    <a href="#c13"><span>13</span><span>Warranty claims &amp; replacements</span></a>
+    <a href="#c14"><span>14</span><span>Payments &amp; expenses</span></a>
+    <a href="#c15"><span>15</span><span>Reports</span></a>
+    <a href="#c16"><span>16</span><span>Staff accounts &amp; permissions</span></a>
+    <a href="#c17"><span>17</span><span>Settings &amp; activity log</span></a>
+    <a href="#c18"><span>18</span><span>Messages, FAQ &amp; support</span></a>
+  </div>
+  <div class="callout tip" style="margin-top:8mm"><b>About the screenshots</b>The pictures in this manual were taken from a demo copy filled with sample customers, staff and stock, so the names and amounts are examples. Your screens look the same, with your own data. Some buttons only appear for roles that are allowed to use them (see chapter 2).</div>
+</section>
+
+<!-- ================= 1 GETTING STARTED ================= -->
+<section class="chapter" id="c1">
+  <h1><span class="num">1</span>Getting started</h1>
+  <p class="lead">The ERP runs in a web browser, so there is nothing to install. Use Google Chrome or Microsoft Edge on the shop PC, a tablet or a phone.</p>
+
+  <h2>Signing in</h2>
+  <ol class="steps">
+    <li>Open <b>https://erp.singtelmobile.com</b>. Bookmark it, or pin it to the taskbar.</li>
+    <li>Type your <b>Username</b> and <b>Password</b>. The eye button shows the password so you can check what you typed.</li>
+    <li>Click <span class="ui">Sign in →</span>. The system opens the first screen your role is allowed to use.</li>
+  </ol>
+  <figure><img src="img/01-login.jpg"><figcaption>The sign-in page</figcaption></figure>
+  <div class="callout rule"><b>Keep accounts personal</b>Every staff member gets their own username. The system records who made each sale, repair and change, so never share a login. If you forget your password, ask the administrator to reset it. A session stays signed in for up to 12 hours.</div>
+
+  <h2>Change your own password</h2>
+  <ol class="steps">
+    <li>Click your round <b>avatar</b> (your initials) at the top right.</li>
+    <li>Choose <span class="ui">Change password</span>. Enter the current password, then the new one twice. It must be at least 8 characters.</li>
+    <li>Click <span class="ui">Update password</span>. Any other devices signed in with your account are signed out.</li>
+  </ol>
+  <p>The same menu has <span class="ui">My permissions</span>, which shows exactly what your role can do, and <span class="ui">Sign out</span>.</p>
+
+  <h2>A tour of the screen</h2>
+  <figure><img src="img/02-dashboard.jpg"><figcaption>The Dashboard: today's sales, stock alerts, repairs needing attention and warranties at a glance</figcaption></figure>
+  <table>
+    <tr><th style="width:30%">Part of the screen</th><th>What it does</th></tr>
+    <tr><td><b>Menu (left)</b></td><td>The modules: Sales, Inventory, Service, Finance and Administration. Numbers on the menu show items needing attention, such as low stock, open repairs and pending claims. You only see the modules your role allows.</td></tr>
+    <tr><td><b>☰ button</b></td><td>Shrinks the menu to icons or opens it again. The menu also closes by itself 10 seconds after the mouse leaves it, which gives you more working space.</td></tr>
+    <tr><td><b>Search bar</b></td><td>Finds anything: an IMEI, invoice, repair job number, warranty or customer. Press <span class="ui">/</span> on the keyboard to jump to it. Type at least 2 characters, then use the arrow keys and Enter.</td></tr>
+    <tr><td><b>Bell</b></td><td>Alerts: low or out-of-stock items, overdue repairs, devices ready for collection, warranties expiring, claims waiting and customers owing money.</td></tr>
+    <tr><td><b>Moon / sun</b></td><td>Switches between light and dark mode.</td></tr>
+    <tr><td><b>Keyboard shortcuts</b></td><td><span class="ui">F2</span> opens the POS. <span class="ui">/</span> opens search. <span class="ui">Esc</span> closes a window.</td></tr>
+  </table>
+  <div class="callout tip"><b>Everyone sees the same live data</b>The screen refreshes with other staff members' changes every 45 seconds. For example, a sale made at the counter appears on the manager's PC within a minute.</div>
+
+  <h2>Using a phone or tablet</h2>
+  <div class="two">
+    <figure class="phone" style="margin:0"><img src="img/23-phone.jpg" style="width:70%"><figcaption>Phone view with the bottom bar</figcaption></figure>
+    <div><p>On a phone, the four screens you use most appear in a <b>bottom bar</b>, such as Home, POS, Repairs and Warranty. Tap <b>Menu</b> for everything else.</p><p>Buttons are sized for fingers, and tables turn into easy-to-read cards. In the POS, the cart opens from the floating <b>Cart</b> button.</p><p>With Chrome on Android you can also use the phone camera to scan IMEI barcodes (see chapter 8).</p></div>
+  </div>
+</section>
+
+<!-- ================= 2 ROLES ================= -->
+<section class="chapter" id="c2">
+  <h1><span class="num">2</span>Who can do what (roles)</h1>
+  <p class="lead">Each staff account has one <b>role</b>. The role decides which menus, buttons and figures a person sees. The system comes with five roles, and the administrator can adjust them or create new ones (chapter 16).</p>
+  <table>
+    <tr><th style="width:22%">Role</th><th>Typical person</th><th>Can do</th></tr>
+    <tr><td><b>Administrator</b></td><td>Owner</td><td>Everything, including staff accounts, permissions and settings.</td></tr>
+    <tr><td><b>Store Manager</b></td><td>Shop manager</td><td>Runs daily operations. Sales, including refunds, cancellations and approvals. Stock, including approving adjustments. Purchases and suppliers. All repairs, including assigning technicians and delivery on credit. Warranty claim decisions. Expenses. All reports, including profit. Can view (not change) users and settings.</td></tr>
+    <tr><td><b>Sales Executive</b></td><td>Counter staff</td><td>POS sales (no price changes), customers, taking in repairs, printing and delivering repairs, warranty checks and registering claims. Cannot see cost prices or profit, and cannot refund.</td></tr>
+    <tr><td><b>Technician</b></td><td>Repair technician</td><td>Their assigned repair jobs: view, update, print and deliver. Can look up stock, products, customers and warranties.</td></tr>
+    <tr><td><b>Store Keeper</b></td><td>Stock person</td><td>Products, stock (requests adjustments, which a manager approves), purchases and receiving stock, suppliers.</td></tr>
+  </table>
+  <div class="callout tip"><b>"Access denied" messages</b>If a button is missing, or you see <i>"Access denied — your role does not have … permission"</i>, your role isn't allowed that action. Ask the manager or administrator. This is how the system protects cash, prices and stock.</div>
+  <h2>Things only managers can approve</h2>
+  <ul>
+    <li>Refunds, returns and cancelling an invoice. Cancelling an invoice from a previous day needs <b>Sales Approve</b>.</li>
+    <li>Changing a selling price or giving a discount at the POS (<b>POS Edit</b>).</li>
+    <li>Stock adjustments such as damaged, missing or count corrections (<b>Inventory Approve</b>).</li>
+    <li>Approving or rejecting warranty claims, and extending warranties (<b>Warranties Approve</b>).</li>
+    <li>Handing over a repaired device while money is still owed (<b>Repairs Approve</b>).</li>
+    <li>Seeing cost prices, profit and the profit &amp; loss report (<b>Reports Manage</b>).</li>
+  </ul>
+</section>
+
+<!-- ================= 3 QUICK GUIDE ================= -->
+<section class="chapter" id="c3">
+  <h1><span class="num">3</span>Everyday quick guide</h1>
+  <p class="lead">Keep this page near the counter. It tells you where to go for the jobs you do every day.</p>
+  <table>
+    <tr><th style="width:42%">I want to…</th><th>Go to</th><th style="width:12%">Chapter</th></tr>
+    <tr><td>Sell a phone or accessory</td><td><b>POS / New Sale</b> (or press F2) → add items → choose warranty → <span class="ui">Charge</span></td><td>4</td></tr>
+    <tr><td>Give a customer a price quote</td><td>POS → add items → <span class="ui">Quotation</span></td><td>4</td></tr>
+    <tr><td>Reprint an invoice</td><td>Search the invoice number → <span class="ui">Print</span> / <span class="ui">PDF</span></td><td>5</td></tr>
+    <tr><td>Take back an item / refund</td><td>Invoice → <span class="ui">Return / refund</span> (manager)</td><td>5</td></tr>
+    <tr><td>Receive new stock from a supplier</td><td><b>Purchases</b> → <span class="ui">Receive stock</span> → scan IMEIs</td><td>8</td></tr>
+    <tr><td>Find where a phone is / who bought it</td><td>Type the IMEI in the search bar, or use <b>IMEI Tracker</b></td><td>10</td></tr>
+    <tr><td>Take in a phone for repair</td><td><b>Repairs</b> → <span class="ui">New repair job</span></td><td>11</td></tr>
+    <tr><td>Hand back a repaired phone</td><td>Repair job → <span class="ui">Deliver to customer</span> (signature)</td><td>11</td></tr>
+    <tr><td>Check if a phone is under warranty</td><td><b>Warranties</b> → Warranty check → <span class="ui">Check validity</span></td><td>12</td></tr>
+    <tr><td>A sold phone came back faulty</td><td>Warranties → <span class="ui">Register claim</span></td><td>13</td></tr>
+    <tr><td>Give a new phone for a faulty one</td><td>Claim (approved) → <span class="ui">Replace with new unit</span></td><td>13</td></tr>
+    <tr><td>Record a shop expense (bills, tea, transport)</td><td><b>Payments &amp; Expenses</b> → <span class="ui">Record expense</span></td><td>14</td></tr>
+    <tr><td>See today's sales / month profit</td><td><b>Dashboard</b> or <b>Reports</b></td><td>15</td></tr>
+    <tr><td>Add a new staff member</td><td><b>Users &amp; Roles</b> → <span class="ui">New staff account</span></td><td>16</td></tr>
+  </table>
+  <h2>A good daily routine</h2>
+  <div class="two">
+    <div class="card"><h3>Opening</h3><ul><li>Sign in with your own account.</li><li>Check the <b>bell</b> and Dashboard: repairs overdue or ready, low stock, claims waiting.</li><li>Call customers whose devices are <b>Ready for Collection</b>.</li></ul></div>
+    <div class="card"><h3>Closing</h3><ul><li>Record the day's <b>expenses</b>.</li><li>Open <b>Payments &amp; Expenses → Cash summary → Today</b> and match the cash in the drawer.</li><li>Update repair job statuses before leaving.</li><li>Sign out on shared PCs.</li></ul></div>
+  </div>
+</section>
+
+<!-- ================= 4 POS ================= -->
+<section class="chapter" id="c4">
+  <h1><span class="num">4</span>Selling at the POS</h1>
+  <p class="lead">Open <b>POS / New Sale</b> from the menu, or press <span class="ui">F2</span>. Products are on the left and the current sale (the cart) is on the right.</p>
+  <figure><img src="img/03-pos.jpg"><figcaption>The POS screen</figcaption></figure>
+
+  <h2>Step 1: Add items</h2>
+  <ul>
+    <li><b>Scan:</b> click the search box, scan the barcode or the phone's IMEI and press <b>Enter</b>. An exact IMEI adds that exact phone. A barcode adds the product.</li>
+    <li><b>Search:</b> type a name, brand or code, then tap the product card. The chips (Mobile Phones, Audio…) filter by category.</li>
+    <li><b>Phones:</b> tapping a phone opens <b>Select IMEI</b>. Pick the exact unit you are handing to the customer.</li>
+    <li><b>Many phones at once:</b> <span class="ui">Bulk scan</span> lets you scan several IMEIs in a row, then <span class="ui">Add n to cart</span>.</li>
+    <li><b>Accessories:</b> use + / − to change the quantity.</li>
+  </ul>
+  <figure class="half"><img src="img/04-pos-cart.jpg"><figcaption>Choosing the exact IMEI for a phone</figcaption></figure>
+  <div class="callout warn"><b>Each phone is sold against its own IMEI</b>The system will not sell an IMEI that is not in stock, and the same IMEI cannot go into the cart twice. This protects you from selling a phone that was already sold, returned or is in repair.</div>
+
+  <h2>Step 2: Choose the warranty for every phone (required)</h2>
+  <p>Each phone line in the cart has a <b>warranty period</b> box. Choose <b>No warranty</b>, <b>1, 3, 6, 12, 18 or 24 months</b>, or the product's standard period, which is marked "(standard)". The warranty <b>starts on the sale date</b>, and the box shows the start and end dates.</p>
+  <figure><img src="img/04b-pos-cart.jpg"><figcaption>A phone in the cart, waiting for its warranty period ("Required — choose the warranty")</figcaption></figure>
+  <div class="callout rule"><b>You cannot charge until every phone has a warranty choice</b>If you forget, the system says <i>"Select the warranty period for n phone(s) before charging."</i> Accessories automatically get the product's standard warranty.</div>
+
+  <h2>Step 3: Customer, discount and payment</h2>
+  <ol class="steps">
+    <li>Choose the customer, or leave <b>Walk-in customer</b>. For a new customer, click the person-plus button and save their name and phone. Linking a customer is recommended for phones, because the warranty is then tied to their name and phone number.</li>
+    <li>If allowed for your role, change a price or enter an invoice <b>Discount</b>. The system warns you if a price is below cost.</li>
+    <li>Click <span class="ui">Charge Rs. …</span>. In <b>Take payment</b>, enter the amount for each method: Cash, Card, Bank Transfer or Mobile Wallet. <span class="ui">Split payment</span> lets the customer pay part cash, part card. The quick cash buttons fill in common notes, and the change is calculated for you.</li>
+    <li>If the customer pays only part now, tick <b>Record the unpaid balance as customer credit</b>. This needs a registered customer, not a walk-in.</li>
+    <li>Click <span class="ui">Complete sale</span>.</li>
+  </ol>
+  <h2>Step 4: After the sale</h2>
+  <p>The <b>Sale completed</b> window shows the invoice number (INV-…), the change or balance, and how many warranty records were created. Click <span class="ui">Invoice</span> to print, <span class="ui">PDF</span> to download, or <span class="ui">Warranty card</span> to print the customer's warranty certificate. Click <span class="ui">New sale</span> for the next customer.</p>
+  <h2>Quotations</h2>
+  <p>Add items to the cart and click <span class="ui">Quotation</span>. A quote (QT-…) valid for 7 days is saved and can be printed or sent as a PDF. The cart is kept, so you can still complete the sale. Later, open <b>Sales &amp; Invoices → Quotations</b> and click <span class="ui">Load in POS</span> to turn the quote into a sale.</p>
+</section>
+
+<!-- ================= 5 INVOICES ================= -->
+<section class="chapter" id="c5">
+  <h1><span class="num">5</span>Invoices, returns &amp; refunds</h1>
+  <p class="lead"><b>Sales &amp; Invoices</b> lists every invoice. Managers see all staff; sales staff see the invoices they created. The tabs are <b>Invoices</b>, <b>Quotations</b> and <b>Returns &amp; refunds</b>.</p>
+  <figure><img src="img/05-sales.jpg"><figcaption>Invoice list with date, status, payment and staff filters</figcaption></figure>
+  <h2>Inside an invoice</h2>
+  <figure><img src="img/06-invoice.jpg"><figcaption>An invoice: items with their warranty, payments, summary and audit trail</figcaption></figure>
+  <table>
+    <tr><th style="width:26%">Button</th><th>Use it to…</th></tr>
+    <tr><td><span class="ui">Print</span> / <span class="ui">PDF</span></td><td>Reprint the invoice or save it as a PDF to send by WhatsApp or email.</td></tr>
+    <tr><td><span class="ui">Receive payment</span></td><td>Record money paid later against a balance due.</td></tr>
+    <tr><td><span class="ui">Return / refund</span></td><td>Take back some or all items. Tick the phones to return or enter accessory quantities. Choose where the stock goes: <b>Sellable stock</b>, <b>Hold for inspection</b> or <b>Damaged / defective</b>. Then choose the refund method and type a reason. Warranties of returned phones are cancelled automatically.</td></tr>
+    <tr><td><span class="ui">Cancel invoice</span></td><td>Cancel a wrong sale completely. Stock is restored, warranties are voided and payments are refunded. A reason is required. Invoices from a previous day need manager approval. If anything was already returned, use Return / refund instead.</td></tr>
+  </table>
+  <div class="callout tip"><b>Nothing is ever deleted</b>Cancelled and refunded invoices stay in the list with their status and an audit trail of who did what and when.</div>
+</section>
+
+<!-- ================= 6 CUSTOMERS ================= -->
+<section class="chapter" id="c6">
+  <h1><span class="num">6</span>Customers</h1>
+  <p class="lead">Every customer has one record holding their invoices, phones, warranties, repairs and claims. Search by name or phone at the counter.</p>
+  <figure><img src="img/07-customers.jpg"><figcaption>Customer list. "With balance due" shows who owes money.</figcaption></figure>
+  <h2>Add a customer</h2>
+  <ol class="steps">
+    <li>Click <span class="ui">New customer</span>. You can also add one from the POS or the repair form.</li>
+    <li>Enter the <b>Full name</b> and <b>Phone number</b> (required). Email, address and notes are optional.</li>
+    <li>Click <span class="ui">Save customer</span>. Each phone number can belong to one customer only, so the system tells you if the customer already exists.</li>
+  </ol>
+  <h2>The customer page</h2>
+  <ul>
+    <li>Tabs: <b>Overview</b>, <b>Invoices</b>, <b>Devices &amp; warranties</b>, <b>Repairs</b> and <b>Claims</b>.</li>
+    <li><span class="ui">Statement</span> / <span class="ui">PDF</span> prints an account statement with every invoice, payment and balance.</li>
+    <li><span class="ui">Receive payment</span> applies money to the oldest unpaid invoices and repair jobs first.</li>
+    <li><span class="ui">New sale</span> and <span class="ui">New repair</span> start a sale or repair with this customer already filled in.</li>
+  </ul>
+</section>
+
+<!-- ================= 7 PRODUCTS ================= -->
+<section class="chapter" id="c7">
+  <h1><span class="num">7</span>Products</h1>
+  <p class="lead">A <b>product</b> is a model you sell, for example "Samsung Galaxy A15 6GB/128GB Blue". Individual phones (units) are added when you receive stock (chapter 8). You don't create them here.</p>
+  <figure><img src="img/08-products.jpg"><figcaption>Products with category, tracking type, price, stock and warranty</figcaption></figure>
+  <h2>Add a product</h2>
+  <ol class="steps">
+    <li>Click <span class="ui">New product</span>.</li>
+    <li><b>Basic information:</b> name, category, brand, model, variant, colour, storage, RAM, condition (New / Used / Refurbished) and default supplier. Leave <i>Product code</i> blank to number it automatically.</li>
+    <li><b>Pricing &amp; tax:</b> cost price, retail price and optional wholesale price.</li>
+    <li><b>Identification &amp; stock:</b> choose <b>Stock tracking</b>:
+      <ul><li><b>Serialised — IMEI</b> for phones. Every unit is tracked by its IMEI.</li><li><b>Serialised — Serial no.</b> for watches and similar items with serial numbers.</li><li><b>Quantity-based</b> for accessories (chargers, cables, cases).</li></ul>
+      Also set the barcode / SKU and a <b>Minimum stock level</b>, which triggers the low-stock alert.</li>
+    <li><b>Warranty:</b> standard months, who provides it (Manufacturer / Distributor / Shop), the warranty for used or refurbished units, and the warranty days when the item is fitted as a repair part.</li>
+    <li>Add a photo and description, keep <b>Active</b> ticked, and save.</li>
+  </ol>
+  <table>
+    <tr><th>Category</th><th>Default warranty</th><th>Category</th><th>Default warranty</th></tr>
+    <tr><td>Mobile Phones</td><td>12 months</td><td>Power Banks</td><td>6 months</td></tr>
+    <tr><td>Smartwatches &amp; Wearables</td><td>12 months</td><td>Audio</td><td>6 months</td></tr>
+    <tr><td>Chargers &amp; Cables</td><td>6 months</td><td>Cases &amp; Protection / Spare Parts</td><td>none</td></tr>
+  </table>
+  <div class="callout rule"><b>Tracking type is fixed once stock exists</b>After a product has stock history, its tracking type (IMEI / serial / quantity) cannot change. A product with history cannot be deleted either; it is <b>deactivated</b> so old invoices stay correct.</div>
+</section>
+
+<!-- ================= 8 PURCHASES ================= -->
+<section class="chapter" id="c8">
+  <h1><span class="num">8</span>Receiving stock &amp; purchases</h1>
+  <p class="lead">Stock enters the system only through <b>Purchases → Receive stock</b>. This is where every phone's IMEI is recorded, which makes it the most important step for accurate stock and warranties.</p>
+  <figure><img src="img/11-purchases.jpg"><figcaption>Purchases &amp; Goods Received</figcaption></figure>
+  <h2>Receive stock (goods received)</h2>
+  <ol class="steps">
+    <li>Click <span class="ui">Receive stock</span>. Choose the <b>Supplier</b>, then type the supplier's invoice number and the received date.</li>
+    <li>For each model, choose the <b>Product</b> and enter the <b>Quantity</b>, <b>Unit cost</b> and, for phones, the <b>Condition</b>. Use <span class="ui">Add line</span> for more models.</li>
+    <li>For phones, enter the <b>IMEI numbers</b>, one per line. For dual-SIM phones type <i>IMEI1, IMEI2</i>. Or use <span class="ui">Bulk scan IMEIs</span> (below). The system checks each number as you go: <i>"✓ All numbers valid"</i>, invalid numbers, duplicates, or IMEIs already registered.</li>
+    <li><b>Payment to supplier:</b> enter the amount paid now and the method. Leave 0 to record the full amount as payable.</li>
+    <li>Click <span class="ui">Receive into stock</span>. The phones are now in stock and ready to sell.</li>
+  </ol>
+  <h2>Bulk IMEI scanning</h2>
+  <p>Bulk scanning is the fastest way to receive a box of phones of one model. It opens from <span class="ui">Bulk scan IMEIs</span>, and the same scanner is used in the POS and for stock checks.</p>
+  <ul>
+    <li><b>USB or Bluetooth barcode scanner:</b> just scan each box. Every scan adds one unit and beeps.</li>
+    <li><b>Paste a list:</b> paste IMEIs copied from the supplier's Excel or email. Spaces, commas and new lines are all accepted.</li>
+    <li><b>Camera:</b> on Chrome for Android, tap <span class="ui">Camera</span> to scan with the phone.</li>
+    <li><b>Dual-SIM boxes:</b> tick the option and scan IMEI 1 then IMEI 2 for each phone.</li>
+    <li>Wrong numbers are rejected with a reason, for example <i>"Invalid IMEI — check digit failed"</i>, <i>"Already registered"</i> or <i>"Already scanned in this batch"</i>. Click <span class="ui">Use n units</span> to finish. The line quantity is updated to match.</li>
+  </ul>
+  <div class="callout warn"><b>One IMEI can only exist once</b>The system blocks a duplicate IMEI or serial number, even from a different supplier. If you see <i>"already registered"</i>, check the box: it may be a returned or previously sold unit.</div>
+  <h2>Purchase orders, supplier payments and returns</h2>
+  <ul>
+    <li><span class="ui">New purchase order</span> records an order before the goods arrive. Stock doesn't change until you open the order and click <span class="ui">Receive this order</span>.</li>
+    <li><span class="ui">Pay supplier</span> on a purchase records a payment against what you owe.</li>
+    <li><span class="ui">Return to supplier</span> (manager) sends units back, including faulty warranty-return phones (RMA). Tick the units, give a reason, and the supplier balance is credited.</li>
+    <li><b>Suppliers</b> in the menu lists each supplier with total purchased, paid and outstanding.</li>
+  </ul>
+  <figure><img src="img/12-suppliers.jpg"><figcaption>Suppliers and amounts payable</figcaption></figure>
+</section>
+
+<!-- ================= 9 STOCK ================= -->
+<section class="chapter" id="c9">
+  <h1><span class="num">9</span>Stock control &amp; stock checks</h1>
+  <p class="lead"><b>Stock Control</b> shows stock levels, every stock movement, and adjustments. The menu number shows how many products are low or out of stock.</p>
+  <figure><img src="img/09-stock.jpg"><figcaption>Stock levels with low-stock and out-of-stock alerts</figcaption></figure>
+  <h2>Correcting stock (adjustments)</h2>
+  <ol class="steps">
+    <li>Click <span class="ui">Stock adjustment</span> and choose the product.</li>
+    <li>For a phone, choose the exact <b>IMEI</b> and the type: Damaged, Missing, Mark defective or Return to stock. For accessories, enter the <b>quantity change</b> (for example -2 or +5) and the type: Damaged, Missing, Found / count correction, Internal use or Opening stock.</li>
+    <li>Type the <b>Reason</b> and click <span class="ui">Submit adjustment</span>.</li>
+  </ol>
+  <div class="callout rule"><b>Manager approval</b>Adjustments from staff wait in the <b>Adjustments</b> tab until a manager clicks <span class="ui">Approve</span> or <span class="ui">Reject</span>. Managers' own adjustments apply immediately. Stock can never go below zero.</div>
+  <h2>Counting stock</h2>
+  <ul>
+    <li><b>Accessories:</b> <span class="ui">Stock sheet</span> prints a count sheet with Counted and Notes columns.</li>
+    <li><b>Phones (IMEI audit):</b> in <b>IMEI Tracker</b> click <span class="ui">Stock check (bulk scan)</span>, choose the model or shelf, and scan every phone on the shelf. Each scan shows <i>in stock ✓</i>, <i>Wrong shelf</i>, <i>system says sold / in repair…</i> or <i>NOT IN SYSTEM</i>. The result lists phones that are <b>missing</b> (in the system but not scanned). <span class="ui">Export result</span> saves it. The stock check itself changes nothing, so you can run it as often as you like.</li>
+  </ul>
+</section>
+
+<!-- ================= 10 IMEI ================= -->
+<section class="chapter" id="c10">
+  <h1><span class="num">10</span>IMEI Tracker</h1>
+  <p class="lead">Every phone the shop has ever received is listed here with its full life story: purchase, sale, repairs, warranty, returns and replacements.</p>
+  <figure><img src="img/10-imei.jpg"><figcaption>IMEI &amp; Serial Tracker with status, condition and product filters</figcaption></figure>
+  <ul>
+    <li>Search by <b>IMEI, serial, model, invoice or customer</b>, or just type the IMEI in the top search bar from any screen.</li>
+    <li>Statuses: In stock, Sold, Returned (inspection), Damaged, Missing, Under repair, Returned to supplier, Warranty return (defective).</li>
+    <li>Open a unit to see who supplied it and when, who bought it, its warranties and repairs, and the <b>Device timeline</b> of every event with time and staff name.</li>
+    <li>For a phone the shop sold, <span class="ui">New repair for this device</span> starts a repair job straight away.</li>
+  </ul>
+  <div class="callout tip"><b>Customer says "I bought this phone here"?</b>Search the IMEI. You will instantly see the invoice, the sale date and whether the warranty is still valid.</div>
+</section>
+
+<!-- ================= 11 REPAIRS ================= -->
+<section class="chapter" id="c11">
+  <h1><span class="num">11</span>Repairs</h1>
+  <p class="lead"><b>Repairs</b> tracks every device from intake to hand-over. Switch between the <b>List</b> and the <b>Board</b> (columns by stage). Technicians see their own jobs and unassigned jobs; managers see all of them.</p>
+  <figure><img src="img/13-repairs.jpg"><figcaption>Repair jobs with tabs for workshop, approval / parts, ready, overdue and delivered</figcaption></figure>
+
+  <h2>Take in a device (new job card)</h2>
+  <ol class="steps">
+    <li>Click <span class="ui">New repair job</span>.</li>
+    <li><b>Customer:</b> choose the customer or add a new one.</li>
+    <li><b>Device:</b> IMEI (dial <b>*#06#</b> on the phone) or serial number, brand, model, colour, repair type, priority (Normal / High / Urgent), expected completion date, and the <b>accessories received</b> (SIM tray, back cover, charger, box…).</li>
+    <li><b>Problem &amp; condition:</b> the customer's complaint, physical condition and existing damage. Add photos of scratches or cracks.</li>
+    <li><b>Estimate &amp; approval:</b> estimated cost, advance payment, and technician (managers). Tick <i>Customer approves the estimated cost</i> if they agreed.</li>
+    <li>The customer must accept the <b>repair terms</b> (data loss, uncollected devices, warranty conditions). Tick the box.</li>
+    <li>Click <span class="ui">Create job &amp; print receipt</span>. Give the customer the job receipt with the job number (RJ-…).</li>
+  </ol>
+  <div class="callout tip"><b>Smart IMEI check</b>When you type the IMEI, the system warns you if the device already has an open job, was <b>sold by us and is still under warranty</b> (register a warranty claim instead of charging), has an active repair warranty, or was repaired before.</div>
+
+  <h2>Repair stages</h2>
+  <div class="flow"><span>1 Received</span><span>2 Inspection Pending</span><span>3 Diagnosis Completed</span><span class="opt">4 Awaiting Customer Approval</span><span class="opt">5 Awaiting Spare Parts</span><span>6 Repair in Progress</span><span>7 Repair Completed</span><span>8 Quality Check</span><span>9 Ready for Collection</span><span class="end">10 Delivered</span></div>
+  <p class="small muted">Grey stages are optional and are marked "skipped" if not used. A job can also be <b>Cancelled</b> (any parts used go back to stock).</p>
+  <figure><img src="img/14-repair-detail.jpg"><figcaption>A job card: the progress bar, the "Move to next stage" button, device and customer details</figcaption></figure>
+  <h2>Working on the job</h2>
+  <ul>
+    <li><span class="ui">Move to "next stage"</span> moves the job forward one stage. <b>Set another status…</b> jumps to a different stage, and you can add a note that is saved in the history.</li>
+    <li>If the estimate needs approval, record the customer's answer with <span class="ui">Customer approved</span> or <span class="ui">Customer rejected</span>. The repair cannot start without approval, except for warranty repairs.</li>
+    <li><b>Diagnosis &amp; work:</b> record what was found and done. This is required before marking the job Ready.</li>
+    <li><b>Parts &amp; charges:</b> <span class="ui">Issue part from stock</span> takes a spare part out of stock and adds it to the job. Then set the labour charge and discount. If the part is out of stock, set the job to <i>Awaiting Spare Parts</i> and order it.</li>
+    <li><span class="ui">Print…</span> prints the job receipt, repair estimate, repair invoice or delivery receipt.</li>
+  </ul>
+  <h2>Hand the device back (delivery)</h2>
+  <ol class="steps">
+    <li>When the job is <b>Ready for Collection</b>, click <span class="ui">Deliver to customer</span>.</li>
+    <li>Collect any balance. Only a manager can allow delivery with money still owed.</li>
+    <li>Enter who <b>collected</b> the device and who handed it over.</li>
+    <li>Check the <b>repair warranty</b> days for labour and each part. These come from the repair type and are separate from the phone's original warranty.</li>
+    <li>The customer <b>signs on the screen</b> (finger, stylus or mouse) and confirms the device works and all accessories were returned.</li>
+    <li>Click <span class="ui">Confirm delivery</span>. Print the <span class="ui">Delivery receipt</span> and the <span class="ui">Warranty card</span> (RW-…).</li>
+  </ol>
+</section>
+
+<!-- ================= 12 WARRANTIES ================= -->
+<section class="chapter" id="c12">
+  <h1><span class="num">12</span>Warranties</h1>
+  <p class="lead">The system keeps two kinds of warranty. A <b>product warranty</b> (PW-…) is created when a phone or accessory is sold. A <b>repair warranty</b> (RW-…) is created when a repaired device is delivered. Both are created automatically.</p>
+  <figure><img src="img/15-warranties.jpg"><figcaption>Warranty check box, summary figures and the product / repair warranty lists</figcaption></figure>
+  <h2>Check a warranty at the counter</h2>
+  <ol class="steps">
+    <li>Open <b>Warranties</b>. In <b>Warranty check</b>, type the IMEI, serial, invoice number, job number, warranty number or the customer's phone.</li>
+    <li>Click <span class="ui">Check validity</span>. The result shows <b>Valid — n days remaining</b>, <b>Expired n days ago</b>, <b>Void</b> (for example the phone was returned) or <b>Unit replaced</b> (coverage moved to the new phone).</li>
+    <li>From the result you can open the details or click <span class="ui">Register claim</span>.</li>
+  </ol>
+  <table>
+    <tr><th>Status</th><th>Meaning</th></tr>
+    <tr><td><b>Active</b></td><td>Covered.</td></tr>
+    <tr><td><b>Expiring soon</b></td><td>Covered, but ends within 30 days (adjustable in Settings).</td></tr>
+    <tr><td><b>Expired</b></td><td>The end date has passed.</td></tr>
+    <tr><td><b>Void</b></td><td>Cancelled, for example because the item was returned or the invoice was cancelled.</td></tr>
+    <tr><td><b>Replaced</b></td><td>The phone was swapped under warranty. The new phone carries the warranty now.</td></tr>
+  </table>
+  <p>A warranty's page has <span class="ui">Print certificate</span> / <span class="ui">Print warranty card</span> and <span class="ui">PDF</span>. Managers can also click <span class="ui">Extend</span> to add months or days, with a reason.</p>
+</section>
+
+<!-- ================= 13 CLAIMS ================= -->
+<section class="chapter" id="c13">
+  <h1><span class="num">13</span>Warranty claims &amp; replacements</h1>
+  <p class="lead">Use a claim whenever a customer brings back something still under warranty. The claim records the fault, the inspection, the decision and how it was solved.</p>
+  <div class="flow"><span>Pending</span><span>Under inspection</span><span>Approved / Rejected</span><span class="end">Resolved</span></div>
+  <h2>1. Register the claim (counter staff)</h2>
+  <ol class="steps">
+    <li>In <b>Warranties</b>, find the warranty with Warranty check and click <span class="ui">Register claim</span>.</li>
+    <li>Type the <b>Reported fault</b> (the customer's words).</li>
+    <li>Inspect the device at the counter and tick any exclusions: physical / impact damage, liquid damage, opened or repaired elsewhere. The system shows <i>"Eligible under warranty terms"</i> or <i>"Likely not eligible"</i>.</li>
+    <li>Add notes and photos, then click <span class="ui">Register claim</span>. The claim number is PWC-… for a product or RWC-… for a repair.</li>
+  </ol>
+  <figure><img src="img/16-claims.jpg"><figcaption>Warranty Claims, with tabs by stage</figcaption></figure>
+  <h2>2. Decide (manager)</h2>
+  <p>Open the claim and click <b>Process claim</b>. Assign it, move it to <b>Under inspection</b>, record the findings, then <b>Approve</b> or <b>Reject</b> it with a note. If the terms are not met but you want to help the customer, tick <b>Goodwill override</b> to approve anyway.</p>
+  <figure class="half"><img src="img/17-claim-detail.jpg"><figcaption>A claim with its decision and outcome options</figcaption></figure>
+  <h2>3. Solve it</h2>
+  <div class="two">
+    <div class="card"><h3>Repair it free</h3><p>Click <span class="ui">Create free warranty repair job</span>. A no-charge repair job linked to the claim is created and follows the normal repair steps (chapter 11).</p></div>
+    <div class="card"><h3>Give a new phone</h3><p>Click <span class="ui">Replace with new unit</span> and follow the steps below. Refund and Other are also available as outcomes.</p></div>
+  </div>
+  <h2>Replacing a faulty phone with a new one</h2>
+  <ol class="steps">
+    <li>The <b>Warranty replacement</b> window shows the <b>defective unit coming back</b> and the <b>replacement unit going to the customer</b> side by side.</li>
+    <li>Choose the replacement model (same model or same category), then <b>scan or pick the new IMEI</b> from stock.</li>
+    <li><b>Choose the warranty for the new phone. You must always pick one:</b>
+      <ul><li><b>Continue the remaining original warranty</b>, until the old end date;</li><li><b>n months from today</b>; or</li><li><b>Until a date</b> you choose.</li></ul></li>
+    <li>Add a note (for example the RMA reference) and click <span class="ui">Confirm replacement</span>. Print the <span class="ui">Replacement warranty card</span> for the customer.</li>
+  </ol>
+  <div class="callout tip"><b>What the system does for you</b>
+    <ul style="margin-bottom:0">
+      <li>The faulty phone becomes <b>Warranty return (defective)</b>. It cannot be sold, and you can send it back to the supplier with <b>Purchases → Return to supplier</b>.</li>
+      <li>The new phone is marked as sold to the same customer, with a new warranty (PW-…).</li>
+      <li>The old warranty is marked <b>Replaced</b>, the claim is resolved and a replacement record (RPL-…) is created.</li>
+      <li><b>Both phones' histories link to each other</b>: "defective X replaced by Y". The original invoice stays unchanged and shows the swap.</li>
+    </ul></div>
+</section>
+
+<!-- ================= 14 FINANCE ================= -->
+<section class="chapter" id="c14">
+  <h1><span class="num">14</span>Payments &amp; expenses</h1>
+  <p class="lead"><b>Payments &amp; Expenses</b> shows money in and out for any period: Today, This week, This month, Last month, This year, or Custom dates.</p>
+  <figure><img src="img/18-finance.jpg"><figcaption>Cash summary by payment method</figcaption></figure>
+  <table>
+    <tr><th style="width:26%">Tab</th><th>Shows</th></tr>
+    <tr><td><b>Cash summary</b></td><td>Money in, money out, net cash flow and expenses, by payment method. Use it to close the cash drawer.</td></tr>
+    <tr><td><b>Payment ledger</b></td><td>Every payment: sales receipts, repair receipts, refunds, supplier payments and expenses.</td></tr>
+    <tr><td><b>Expenses</b></td><td>All expenses with a chart by category.</td></tr>
+    <tr><td><b>Receivables</b></td><td>Customers who owe money. Click <span class="ui">Receive</span> to collect.</td></tr>
+    <tr><td><b>Payables</b></td><td>What the shop owes suppliers.</td></tr>
+  </table>
+  <h2>Record an expense</h2>
+  <ol class="steps">
+    <li>Click <span class="ui">Record expense</span>.</li>
+    <li>Choose the <b>Category</b>, enter the <b>Amount</b> and date (not in the future), who paid, and a note.</li>
+    <li>Save. The expense gets a number (EXP-…). A wrong entry can be <b>voided</b> with a reason; it stays visible, marked void.</li>
+  </ol>
+</section>
+
+<!-- ================= 15 REPORTS ================= -->
+<section class="chapter" id="c15">
+  <h1><span class="num">15</span>Reports</h1>
+  <p class="lead"><b>Reports</b> gives a full picture of the business for any period. Every report can be printed or saved with <span class="ui">Print / PDF</span>, or exported to Excel with <span class="ui">Excel (CSV)</span>.</p>
+  <figure><img src="img/19-reports.jpg"><figcaption>Reports &amp; Analytics</figcaption></figure>
+  <table>
+    <tr><th style="width:24%">Report</th><th>What you learn</th></tr>
+    <tr><td><b>Sales</b></td><td>Net sales, average invoice, discounts, returns, outstanding and gross profit. Breakdowns by category, brand, top products, staff and payment method.</td></tr>
+    <tr><td><b>Inventory &amp; purchases</b></td><td>Stock value by category, low and out-of-stock items, stock movements, IMEI stock by product, purchases by supplier, damaged / returned / RMA units.</td></tr>
+    <tr><td><b>Repairs</b></td><td>Jobs received and delivered, average turnaround time, revenue, jobs by status and technician, parts used, overdue jobs, repeat and warranty repairs.</td></tr>
+    <tr><td><b>Warranties</b></td><td>Warranties by status, those expiring in the next 60 days, claims and decisions, unit replacements, warranty repair costs.</td></tr>
+    <tr><td><b>Profit &amp; loss</b></td><td>12-month profit and loss with a net profit chart. Managers and owner only.</td></tr>
+  </table>
+</section>
+
+<!-- ================= 16 USERS ================= -->
+<section class="chapter" id="c16">
+  <h1><span class="num">16</span>Staff accounts &amp; permissions</h1>
+  <p class="lead">For the owner / administrator. <b>Users &amp; Roles</b> has two tabs: <b>Staff accounts</b> and <b>Roles &amp; permissions</b>.</p>
+  <figure><img src="img/20-users.jpg"><figcaption>Staff accounts</figcaption></figure>
+  <h2>Add a staff member</h2>
+  <ol class="steps">
+    <li>Click <span class="ui">New staff account</span>.</li>
+    <li>Enter the <b>Full name</b>, a <b>Username</b> (lowercase letters, numbers, dots or underscores, at least 3 characters), the <b>Role</b>, and a <b>Password</b> of at least 8 characters. Phone and email are optional.</li>
+    <li>Click <span class="ui">Save account</span> and give the person their username and password. Ask them to change the password after their first sign-in (chapter 1).</li>
+  </ol>
+  <h2>When someone leaves</h2>
+  <p>Click <span class="ui">Deactivate</span> on their account. They are signed out immediately and can no longer sign in, but all their sales and history are kept. Accounts are never deleted. To reset a forgotten password, edit the account and enter a new one in <b>Reset password</b>.</p>
+  <h2>Changing what a role can do</h2>
+  <p>In <b>Roles &amp; permissions</b>, each role has a grid of <b>modules</b> (POS, Sales, Inventory, Repairs…) and <b>actions</b>: View, Create, Edit, Delete, Approve, Print, Export, Refund, Cancel, Deliver and Manage. Tick what the role may do and click <span class="ui">Save permissions</span>. <span class="ui">New role</span> can copy permissions from an existing role as a starting point.</p>
+  <div class="callout rule"><b>Safety rules</b>The Administrator role cannot be deleted, at least one active administrator must always exist, and you cannot change your own role or deactivate yourself.</div>
+</section>
+
+<!-- ================= 17 SETTINGS ================= -->
+<section class="chapter" id="c17">
+  <h1><span class="num">17</span>Settings &amp; activity log</h1>
+  <p class="lead"><b>Settings</b> (administrator) controls the shop details printed on documents, tax, warranty rules and repair types. Each section has its own <span class="ui">Save</span> button.</p>
+  <figure><img src="img/22-settings.jpg"><figcaption>Settings</figcaption></figure>
+  <table>
+    <tr><th style="width:30%">Section</th><th>What to set</th></tr>
+    <tr><td><b>Business profile</b></td><td>Shop name, tagline, tax / business ID, address, phone and email. These appear on invoices, receipts and warranty cards.</td></tr>
+    <tr><td><b>Tax, currency &amp; invoices</b></td><td>Currency (Rs.), tax name and rate, whether prices include tax, invoice prefix, payment methods, expense categories, invoice footer text.</td></tr>
+    <tr><td><b>Product warranty policy</b></td><td>The "expiring soon" warning period, default warranty months per category, and the terms printed for new and used / refurbished items.</td></tr>
+    <tr><td><b>Repairs &amp; repair warranty</b></td><td>Whether the repair warranty starts at delivery or at completion, whether a customer signature is required at delivery, repair types with their labour warranty days, and the repair terms text.</td></tr>
+    <tr><td><b>Notifications</b></td><td>Which alerts appear in the bell.</td></tr>
+  </table>
+  <div class="callout warn"><b>Before going live</b>Confirm the correct <b>VAT rate and VAT number</b> with your accountant. The system was delivered with a placeholder rate of 8%. Check the warranty and repair terms text too, because it is printed on every customer document.</div>
+  <h2>Activity log</h2>
+  <figure><img src="img/21-activity.jpg"><figcaption>Activity log: who did what, and when</figcaption></figure>
+  <p>The <b>Activity Log</b> records every sign-in (including failed attempts) and every change, with the time, staff name and details. Tick <b>Sensitive only</b> to see refunds, permission changes, stock adjustments, warranty changes and price changes.</p>
+</section>
+
+<!-- ================= 18 FAQ ================= -->
+<section class="chapter" id="c18">
+  <h1><span class="num">18</span>Messages, FAQ &amp; support</h1>
+  <h2>Common messages and what to do</h2>
+  <table>
+    <tr><th style="width:44%">Message</th><th>What to do</th></tr>
+    <tr><td>Select the warranty period for n phone(s) before charging.</td><td>Choose a warranty (or "No warranty") for each phone in the cart.</td></tr>
+    <tr><td>That IMEI is already in the cart.</td><td>The phone is already added. Pick a different unit.</td></tr>
+    <tr><td>… is sold / under repair — cannot be sold.</td><td>That IMEI is not in stock. Search it in IMEI Tracker to see why.</td></tr>
+    <tr><td>Partial payment / credit requires a registered customer.</td><td>Choose or add the customer instead of Walk-in.</td></tr>
+    <tr><td>Overpayment is only allowed in cash.</td><td>Card, bank and wallet payments must match the amount exactly. Give change only for cash.</td></tr>
+    <tr><td>… is already registered … Duplicate IMEI/serial registration is blocked.</td><td>That IMEI is already in the system. Check whether it is a returned unit.</td></tr>
+    <tr><td>Invalid IMEI — check digit failed.</td><td>The number was mistyped or mis-scanned. Scan it again.</td></tr>
+    <tr><td>Customer must accept the repair terms before the job is created.</td><td>Read the terms to the customer and tick the box.</td></tr>
+    <tr><td>Customer signature is required for delivery.</td><td>Ask the customer to sign in the signature box.</td></tr>
+    <tr><td>Access denied — your role does not have … permission.</td><td>Ask a manager. Your role isn't allowed this action.</td></tr>
+    <tr><td>Your session has expired. Please sign in again.</td><td>Sign in again. Sessions last up to 12 hours.</td></tr>
+  </table>
+  <h2>Frequently asked questions</h2>
+  <h3>Can I delete a wrong sale?</h3><p>No. Sales are never deleted, so that records stay honest. A manager can <b>cancel</b> the invoice, or use <b>Return / refund</b>. Both are kept in the history.</p>
+  <h3>A customer lost the invoice. How do I prove the warranty?</h3><p>Search the phone's IMEI or the customer's phone number. The invoice and warranty appear instantly, and you can reprint both.</p>
+  <h3>The screen looks old after an update.</h3><p>Press <b>Ctrl + F5</b> once to reload the page.</p>
+  <h3>Is my data backed up?</h3><p>Yes. The database and uploaded files are backed up automatically every night on the server.</p>
+  <h3>Can I use it when the internet is down?</h3><p>No. The system needs an internet connection, because all staff share one live database. Keep a mobile data hotspot as a backup connection for the shop PC.</p>
+
+  <div class="callout tip" style="margin-top:8mm"><b>Support</b>For help, training or changes, contact <b>Grow More Solutions Pvt Ltd</b> on <b>077 989 5511</b>. Please tell us your username, the screen you were on and the exact message you saw. A screenshot helps a lot.</div>
+  <p class="small muted" style="margin-top:10mm">Singtel Mobile ERP (MobiCore ERP) User Manual, Version 1.0.0, October 2026. © 2026 Singtel Mobile. All rights reserved. Developed by Grow More Solutions Pvt Ltd for Singtel Mobile, No.158/c, Main Street, Matale.</p>
+</section>
+
+</body>
+</html>

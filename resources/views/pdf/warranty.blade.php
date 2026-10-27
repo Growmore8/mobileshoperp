@@ -12,7 +12,7 @@
     <div class="muted">{{ $isR ? 'Separate from the original product warranty' : ($w->months.' months · '.$w->provider.' warranty · '.ucfirst((string) $w->condition)) }}</div></div></td>
 </tr></table>
 @if($w->replaces_warranty_id)
-<div class="box" style="margin-bottom:8px"><h4>Warranty replacement</h4>This unit (<span class="mono">{{ $w->imei ?: $w->serial }}</span>) replaces defective unit <span class="mono">{{ $w->replaced_device_code }}</span>. {{ $w->mode === 'remaining' ? 'Remaining original warranty (originally from '.$w->original_start?->format('d M Y').').' : 'Warranty period set at replacement: until '.$w->end_date->format('d M Y').'.' }}</div>
+<div class="box" style="margin-bottom:8px"><h4>Warranty replacement</h4>This unit (<span class="mono">{{ $w->imei ?: $w->serial }}</span>) replaces the defective unit <span class="mono">{{ $w->replaced_device_code }}</span>. {{ $w->mode === 'remaining' ? 'Remaining original warranty (originally from '.$w->original_start?->format('d M Y').').' : 'Warranty period set at replacement: until '.$w->end_date->format('d M Y').'.' }}</div>
 @endif
 @if($isR)
 <table class="items"><thead><tr><th>Coverage</th><th class="num">Period</th><th class="num">Valid until</th></tr></thead><tbody>

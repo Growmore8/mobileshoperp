@@ -2,7 +2,7 @@
 @section('body')
 @php($c = $sale->customer)
 <table class="cols"><tr>
-  <td><div class="box"><h4>Customer</h4><b>{{ $c?->name ?? 'Walk-in Customer' }}</b>
+  <td><div class="box"><h4>Customer</h4><b>{{ $c?->name ?? 'Walk-in customer' }}</b>
     @if($c)<div>{{ $c->phone }}@if($c->email) · {{ $c->email }}@endif</div><div class="muted">{{ $c->address }}</div><div class="muted">ID {{ $c->code }}</div>@endif</div></td>
   <td><div class="box"><h4>Payment status</h4>
     @if($t['balance'] > 0)<div class="big bad">Balance {{ $money($t['balance']) }}</div>@else<div class="big ok">PAID</div>@endif

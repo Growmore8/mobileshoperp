@@ -92,7 +92,7 @@ class SaleService
                 $change = Shop::money($paid - $t['total']);
                 $i = collect($pays)->search(fn ($p) => $p['method'] === 'Cash' && $p['amount'] >= $change);
                 if ($i === false) {
-                    Shop::fail('Over-payment is only allowed in cash (to give change).');
+                    Shop::fail('Overpayment is only allowed in cash (to give change).');
                 }
                 $pays[$i]['amount'] = Shop::money($pays[$i]['amount'] - $change);
                 $paid = $t['total'];
@@ -118,7 +118,7 @@ class SaleService
                 if ($l['device_id']) {
                     $dev = Device::find($l['device_id']);
                     $dev->update(['status' => 'sold', 'sale_id' => $sale->id, 'customer_id' => $sale->customer_id, 'sold_at' => now()]);
-                    Inventory::event($dev, 'Sold', $sale->no, 'Sold to '.($cust?->name ?? 'Walk-in Customer').' for '.Shop::fmt($l['price'] - $l['discount']));
+                    Inventory::event($dev, 'Sold', $sale->no, 'Sold to '.($cust?->name ?? 'Walk-in customer').' for '.Shop::fmt($l['price'] - $l['discount']));
                     Inventory::move($l['product_id'], -1, 'Sale', $sale->no, null, $dev->id);
                     if ($w = WarrantyService::registerForSale($sale, $item, $dev, $warrantyChoice[$idx])) {
                         $item->update(['warranty_id' => $w->id]);
@@ -261,7 +261,7 @@ class SaleService
             Shop::fail('Only invoices without returns can be cancelled. Use Return / Refund instead.');
         }
         if (! $sale->date->isToday() && ! Shop::can('sales', 'approve')) {
-            Shop::fail('Invoices from previous days can only be cancelled by a user with Sales “Approve” permission.', 403);
+            Shop::fail('Invoices from previous days can only be cancelled by a user with the Sales “Approve” permission.', 403);
         }
         if (mb_strlen(trim($reason)) < 3) {
             Shop::fail('Enter a cancellation reason.');

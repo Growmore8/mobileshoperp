@@ -22,7 +22,7 @@ class SettingSeeder extends Seeder
             'tax_inclusive' => true,
             'invoice_prefix' => 'INV-',
             'invoice_footer' => 'Thank you for shopping with us! Returns accepted within 7 days with the original invoice and packaging, subject to inspection.',
-            'costing' => 'Serialized devices: actual purchase cost per IMEI. Quantity items: weighted average cost.',
+            'costing' => 'Serialised devices: actual purchase cost per IMEI. Quantity items: weighted average cost.',
             'warranty_start' => 'sale',
             'repair_warranty_start' => 'delivery',
             'expiring_days' => 30,
@@ -44,7 +44,7 @@ class SettingSeeder extends Seeder
             'terms' => [
                 'product' => 'Covers manufacturing defects under normal use for the stated period. Excludes physical/impact damage, liquid damage, burn marks, unauthorised repairs or opened seals, software tampering, and consumables. Warranty card and invoice must be presented.',
                 'used' => 'Shop warranty for used/refurbished devices covers motherboard and display functional faults only. Excludes battery health, cosmetic wear, physical/liquid damage and accessories.',
-                'repair' => 'Repair warranty covers only the replaced parts and the specific service performed, for the stated periods. It does not extend or replace the original product warranty. Void if the device is physically damaged, liquid damaged, or opened by another party.',
+                'repair' => 'Repair warranty covers only the replaced parts and the specific service performed, for the stated periods. It does not extend or replace the original product warranty. Void if the device is physically damaged, liquid-damaged, or opened by another party.',
             ],
             'notify' => ['low_stock' => true, 'overdue_repairs' => true, 'ready_for_collection' => true, 'warranty_expiry' => true, 'pending_claims' => true, 'receivables' => true],
             'channels' => ['sms' => false, 'email' => false, 'whatsapp' => false],

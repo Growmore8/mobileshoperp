@@ -103,18 +103,18 @@ function renderLogin() {
       <section class="lg-copy">
         <div class="lg-eyebrow">Sales · Stock · Repairs · Warranty</div>
         <h1>Every phone. Every IMEI. <span class="hero-grad">Every warranty.</span></h1>
-        <p>Sell the latest iPhone and Galaxy models, book repairs and settle warranty claims — with every unit tracked by its IMEI, from supplier to customer.</p>
+        <p>Sell the latest iPhone and Galaxy models, manage repairs and handle warranty claims, with every unit tracked by its IMEI from the supplier to the customer.</p>
         <div class="lg-tags">${[['scan', 'IMEI tracking'], ['wrench', 'Repairs'], ['shield', 'Warranty claims'], ['chart', 'Live reports']].map(([i, t]) => `<span class="lg-tag">${icon(i)}${t}</span>`).join('')}</div>
       </section>
       <section class="lg-card">
         <h2>Sign in</h2>
-        <p class="lg-sub">Good to see you again — use your staff account.</p>
+        <p class="lg-sub">Welcome back. Please sign in with your staff account.</p>
         <form id="login-form" class="stack" novalidate>
           <div class="field"><label for="lg-user">Username</label><input class="input" id="lg-user" name="username" autocomplete="username" placeholder="e.g. kevin" required></div>
           <div class="field"><label for="lg-pass">Password</label><div class="lg-pass"><input class="input" id="lg-pass" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required><button class="lg-eye" type="button" aria-label="Show password" aria-pressed="false">${icon('eye')}</button></div></div>
           <button class="btn lg-submit" type="submit">Sign in <span aria-hidden="true">→</span></button>
         </form>
-        <p class="lg-help">Forgot password? Ask your administrator to reset it.</p>
+        <p class="lg-help">Forgot your password? Ask your administrator to reset it.</p>
         ${META.demo && META.demoAccounts.length ? `<div class="lg-demo"><div class="lg-or"><span>Demo accounts — click to sign in</span></div>
           <div class="demo-accounts">${META.demoAccounts.map((a) => `<button class="demo-acc" data-u="${h(a.username)}" data-p="${h(a.password)}" type="button">${avatar(a.name)}<div class="grow" style="min-width:0"><div class="n truncate">${h(a.name)}</div><div class="r truncate">${h(a.role)}${a.active ? '' : ' · deactivated'}</div><div class="r mono">${h(a.username)} / ${h(a.password)}</div></div></button>`).join('')}</div></div>` : ''}
       </section>
@@ -208,8 +208,9 @@ function updateChrome() {
 function closeDropdowns() { $$('.dropdown').forEach((d) => d.classList.add('hidden')); const r = $('#gs-results'); r && r.classList.add('hidden'); }
 
 /* Developer credit, bottom of the login page and of every screen */
+const APP_VERSION = '1.0.0';
 function credit() {
-  return '<footer class="app-credit no-print">Powered by Grow More Solutions Pvt Ltd · <a href="tel:+94779895511">077 989 5511</a></footer>';
+  return `<footer class="app-credit no-print">© ${new Date().getFullYear()} Singtel Mobile. All rights reserved. · v${APP_VERSION} · Developed by Grow More Solutions Pvt Ltd · <a href="tel:+94779895511">077 989 5511</a></footer>`;
 }
 
 /* Phone bottom bar: the 4 most-used screens this role may open + Menu */

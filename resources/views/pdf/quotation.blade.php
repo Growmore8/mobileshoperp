@@ -1,7 +1,7 @@
 @extends('pdf.layout')
 @section('body')
 <table class="cols"><tr>
-  <td><div class="box"><h4>Customer</h4><b>{{ $q->customer?->name ?? 'Walk-in Customer' }}</b>@if($q->customer)<div>{{ $q->customer->phone }}</div>@endif</div></td>
+  <td><div class="box"><h4>Customer</h4><b>{{ $q->customer?->name ?? 'Walk-in customer' }}</b>@if($q->customer)<div>{{ $q->customer->phone }}</div>@endif</div></td>
   <td><div class="box"><h4>Prepared by</h4>{{ $q->user?->name }}@if($q->note)<div class="muted">{{ $q->note }}</div>@endif</div></td>
 </tr></table>
 <table class="items">

@@ -9,7 +9,7 @@ PAGES.products = {
   title: 'Products', perm: ['products', 'view'],
   render({ query }) {
     const cost = canSeeCost();
-    return pageHead('Products & Categories', 'Phones, accessories, wearables and spare parts. Serialized items are tracked per IMEI / serial number.',
+    return pageHead('Products & Categories', 'Phones, accessories, wearables and spare parts. Serialised items are tracked per IMEI / serial number.',
       `${can('products', 'export') ? `<button class="btn" data-action="prod-export">${icon('download')} Export</button>` : ''}${can('products', 'create') ? `<button class="btn btn-primary" data-action="prod-new">${icon('plus')} New product</button>` : ''}`) +
       `<div class="card">${dataTable('products', {
         rows: () => db.products, q: query.q || '', placeholder: 'Search name, SKU, barcode, brand…',
@@ -60,7 +60,7 @@ function openProductForm(p) {
       ${field('Wholesale price', `<input class="input" name="wholesale" inputmode="decimal" value="${p.wholesale ?? ''}">`)}
       <div class="field"><label>Options</label><label class="check"><input type="checkbox" name="taxable" ${p.taxable ? 'checked' : ''}> Taxable (${db.settings.taxRate}%)</label><label class="check"><input type="checkbox" name="discountable" ${p.discountable ? 'checked' : ''}> Discount eligible</label></div>
       <div class="form-section">Identification & stock</div>
-      ${field('Stock tracking', `<select class="select" name="idType" ${hasMoves ? 'disabled' : ''}><option value="" ${!p.serialized ? 'selected' : ''}>Quantity-based</option><option value="imei" ${p.idType === 'imei' ? 'selected' : ''}>Serialized — IMEI</option><option value="serial" ${p.idType === 'serial' ? 'selected' : ''}>Serialized — Serial no.</option></select>`, { hint: hasMoves ? 'Locked — stock history exists' : 'Phones use IMEI tracking' })}
+      ${field('Stock tracking', `<select class="select" name="idType" ${hasMoves ? 'disabled' : ''}><option value="" ${!p.serialized ? 'selected' : ''}>Quantity-based</option><option value="imei" ${p.idType === 'imei' ? 'selected' : ''}>Serialised — IMEI</option><option value="serial" ${p.idType === 'serial' ? 'selected' : ''}>Serialised — Serial no.</option></select>`, { hint: hasMoves ? 'Locked — stock history exists' : 'Phones use IMEI tracking' })}
       ${field('SKU', `<input class="input" name="sku" value="${h(p.sku)}">`)}
       ${field('Barcode', `<input class="input" name="barcode" value="${h(p.barcode)}" inputmode="numeric">`)}
       ${field('Minimum stock level', `<input class="input" name="minStock" inputmode="numeric" value="${p.minStock}">`, { hint: 'Low-stock alert threshold' })}
@@ -110,7 +110,7 @@ PAGES.inventory = {
     const pend = db.adjustments.filter((a) => a.status === 'pending').length;
     const head = pageHead('Stock Control', `Costing: ${h(db.settings.costing)}`, `${can('inventory', 'print') ? `<button class="btn" data-action="inv-print">${icon('printer')} Stock sheet</button>` : ''}${can('inventory', 'create') ? `<button class="btn" data-action="adj-new">${icon('layers')} Stock adjustment</button>` : ''}${can('purchases', 'create') ? `<a class="btn btn-primary" href="#/purchases/new">${icon('truck')} Receive stock</a>` : ''}`);
     const tiles = `<div class="kpis mb">
-      ${kpi({ label: 'Active SKUs', value: act.length, icon: 'package', tone: 'blue', foot: `${act.filter((p) => p.serialized).length} serialized · ${act.filter((p) => !p.serialized).length} quantity-based` })}
+      ${kpi({ label: 'Active SKUs', value: act.length, icon: 'package', tone: 'blue', foot: `${act.filter((p) => p.serialized).length} serialised · ${act.filter((p) => !p.serialized).length} quantity-based` })}
       ${kpi({ label: 'Units on hand', value: sum(act, stockOf), icon: 'warehouse', tone: 'cyan', foot: `${db.devices.filter((d) => d.status === 'in_stock').length} IMEI/serial units` })}
       ${cost ? kpi({ label: 'Stock value (cost)', value: money(sum(act, stockValue)), icon: 'layers', tone: 'purple', foot: `Retail value ${money(sum(act, (p) => stockOf(p) * p.price))}` }) : ''}
       ${kpi({ label: 'Low / out of stock', value: `${act.filter((p) => stockState(p) === 'low').length} / ${act.filter((p) => stockState(p) === 'out').length}`, icon: 'alert', tone: 'amber', foot: 'Reorder suggested', href: '#/inventory?f=low' })}
@@ -204,7 +204,7 @@ Object.assign(ACT, {
             $('#adj-dyn', el).innerHTML = field('Unit (IMEI / serial)', `<select class="select" name="deviceId" required>${opts(devs.map((d) => [d.id, `${deviceCode(d)} — ${DEVICE_STATUS[d.status]}`]), '', 'Select unit…')}</select>`, { req: true }) +
               field('Adjustment type', `<select class="select" name="type">${opts(['Damaged', 'Missing', 'Mark defective', 'Return to stock'])}</select>`);
           } else {
-            $('#adj-dyn', el).innerHTML = field('Quantity change', '<input class="input" name="qty" inputmode="numeric" required placeholder="-2 or +5">', { req: true, hint: `Current: ${p.qty}. Use negative to remove.` }) +
+            $('#adj-dyn', el).innerHTML = field('Quantity change', '<input class="input" name="qty" inputmode="numeric" required placeholder="-2 or +5">', { req: true, hint: `Current: ${p.qty}. Use a negative number to remove stock.` }) +
               field('Adjustment type', `<select class="select" name="type">${opts(['Damaged', 'Missing', 'Found / count correction', 'Internal use', 'Opening stock'])}</select>`);
           }
         };
@@ -220,7 +220,7 @@ PAGES.imei = {
   render({ id, query }) {
     if (id) return deviceDetail(id);
     const cost = canSeeCost();
-    return pageHead('IMEI & Serial Tracker', 'Every serialized unit, from purchase through stock, sale, return, repair and warranty.', `<button class="btn btn-primary" data-action="imei-audit">${icon('scan')} Stock check (bulk scan)</button>`) +
+    return pageHead('IMEI & Serial Tracker', 'Every serialised unit, from purchase through stock, sale, return, repair and warranty.', `<button class="btn btn-primary" data-action="imei-audit">${icon('scan')} Stock check (bulk scan)</button>`) +
       `<div class="card">${dataTable('devices', {
         rows: () => db.devices, placeholder: 'Search IMEI, serial, model, invoice, customer…', pageSize: 15, rowHref: (d) => '#/imei/' + d.id,
         searchText: (d) => { const s = d.saleId && find('sales', d.saleId); const pur = find('purchases', d.purchaseId); return [d.imei1, d.imei2, d.serial, productName(d.productId), s ? s.no : '', pur ? pur.no : '', customerName(d.customerId)].join(' '); },
@@ -448,7 +448,7 @@ Object.assign(ACT, {
     const devs = p.items.flatMap((i) => i.deviceIds || []).map((x) => find('devices', x)).filter((d) => ['in_stock', 'damaged', 'returned', 'warranty_return'].includes(d.status));
     const qtyLines = p.items.filter((i) => !find('products', i.productId).serialized);
     const m = openModal({ title: `Return to supplier — ${h(p.no)}`, size: 'lg',
-      body: `<form id="pr-form" class="stack" novalidate>${devs.length ? `<div><div class="label mb-sm">Serialized units</div><div class="stack-sm">${devs.map((d) => `<label class="check"><input type="checkbox" name="dev" value="${d.id}"> <span class="mono">${h(deviceCode(d))}</span> — ${h(productName(d.productId))} ${sbadge('device', d.status)}</label>`).join('')}</div></div>` : ''}
+      body: `<form id="pr-form" class="stack" novalidate>${devs.length ? `<div><div class="label mb-sm">Serialised units</div><div class="stack-sm">${devs.map((d) => `<label class="check"><input type="checkbox" name="dev" value="${d.id}"> <span class="mono">${h(deviceCode(d))}</span> — ${h(productName(d.productId))} ${sbadge('device', d.status)}</label>`).join('')}</div></div>` : ''}
         ${qtyLines.length ? `<div><div class="label mb-sm">Quantity items</div><div class="stack-sm">${qtyLines.map((i) => `<div class="flex"><span class="grow">${h(productName(i.productId))} <span class="xs muted">(${find('products', i.productId).qty} on hand)</span></span><input class="input input-sm" style="width:90px" data-q="${i.productId}" inputmode="numeric" value="0"></div>`).join('')}</div></div>` : ''}
         ${!devs.length && !qtyLines.length ? '<p class="muted">No items from this purchase are available to return.</p>' : ''}
         ${field('Reason', '<textarea class="input" name="reason" rows="2" required placeholder="e.g. Dead on arrival / wrong colour"></textarea>', { req: true })}</form>`,

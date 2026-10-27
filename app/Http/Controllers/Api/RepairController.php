@@ -117,7 +117,7 @@ class RepairController extends Controller
     {
         $d = $request->validate(['collected_by' => 'required|string|max:120', 'confirm' => 'accepted', 'signature' => 'nullable|string|max:400000',
             'payment' => 'nullable|numeric|min:0', 'method' => 'nullable|string|max:30', 'credit' => 'boolean', 'labor_days' => 'nullable|integer|min:0|max:730',
-            'part_days' => 'nullable|array', 'part_days.*' => 'nullable|integer|min:0|max:730'], ['confirm.accepted' => 'Customer confirmation of device condition is required.']);
+            'part_days' => 'nullable|array', 'part_days.*' => 'nullable|integer|min:0|max:730'], ['confirm.accepted' => "Customer confirmation of the device's condition is required."]);
 
         return response()->json(['data' => RepairService::deliver($this->find($id), $d)->load('warranty.components')]);
     }

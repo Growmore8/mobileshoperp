@@ -28,7 +28,7 @@ class RepairAndWarrantyTest extends ShopTestCase
         $this->as($this->manager)->putJson("/api/repairs/$id", ['technician_id' => $this->tech->id])->assertOk();
 
         $this->as($this->tech);
-        $this->postJson("/api/repairs/$id/status", ['status' => 'ready'])->assertStatus(422)->assertJsonPath('message', 'Record the diagnosis / work done before marking as ready.');
+        $this->postJson("/api/repairs/$id/status", ['status' => 'ready'])->assertStatus(422)->assertJsonPath('message', 'Record the diagnosis / work done before marking the job as ready.');
         $this->putJson("/api/repairs/$id", ['diagnosis' => 'Battery swollen, replaced.', 'labor' => 1500])->assertOk();
         $this->postJson("/api/repairs/$id/parts", ['product_id' => $this->battery->id, 'qty' => 1])->assertCreated();
         $this->assertSame(4, $this->battery->fresh()->qty);

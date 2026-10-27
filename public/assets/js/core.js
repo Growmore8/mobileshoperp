@@ -213,7 +213,7 @@ function saveDB() {}
 function log() {}
 function actor() { return currentUser && currentUser.id; }
 function userName(id) { const u = find('users', id); return u ? u.name : (id ? 'Unknown' : '—'); }
-function customerName(id) { const c = find('customers', id); return c ? c.name : 'Walk-in Customer'; }
+function customerName(id) { const c = find('customers', id); return c ? c.name : 'Walk-in customer'; }
 function productName(id) { const p = find('products', id); return p ? p.name : 'Unknown product'; }
 function catKind(categoryId) { return (db.categories.find((c) => c.id === categoryId) || {}).kind || ''; }
 
@@ -290,7 +290,7 @@ function checkEligibility(w, flags = {}) {
   let activeComponents = [];
   if (w.kind === 'repair') {
     activeComponents = w.components.filter((c) => daysUntil(c.end) >= 0);
-    if (!activeComponents.length) reasons.push(`All repair warranty components expired (latest ${fmtDate(warrantyEnd(w))}).`);
+    if (!activeComponents.length) reasons.push(`All repair warranty components have expired (latest${fmtDate(warrantyEnd(w))}).`);
   } else if (daysUntil(w.end) < 0) reasons.push(`Warranty expired on ${fmtDate(w.end)}.`);
   if (flags.physical) reasons.push('Physical / impact damage is excluded by the warranty terms.');
   if (flags.liquid) reasons.push('Liquid damage is excluded by the warranty terms.');
@@ -519,7 +519,7 @@ function getNotifications() {
   }
   if (can('warranties', 'view')) {
     const exp = db.warranties.filter((w) => wStatus(w) === 'expiring');
-    if (s.warrantyExpiry && exp.length) n.push({ tone: 'amber', icon: 'shield', title: `${exp.length} warranties expiring in ${db.settings.expiringDays} days`, text: 'Product and repair warranties nearing expiry', href: '#/warranties?status=expiring' });
+    if (s.warrantyExpiry && exp.length) n.push({ tone: 'amber', icon: 'shield', title: `${exp.length} warranties expiring within ${db.settings.expiringDays} days`, text: 'Product and repair warranties nearing expiry', href: '#/warranties?status=expiring' });
     const pend = db.claims.filter((c) => ['pending', 'inspection'].includes(c.status));
     if (s.pendingClaims && pend.length) n.push({ tone: 'purple', icon: 'shieldAlert', title: `${pend.length} warranty claim(s) awaiting action`, text: pend.slice(0, 3).map((c) => c.no).join(', '), href: '#/claims' });
   }

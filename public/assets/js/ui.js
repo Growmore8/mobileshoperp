@@ -314,7 +314,7 @@ function docHeader(docTitle, meta) {
 }
 function docCustomer(cid, extra = '') {
   const c = find('customers', cid);
-  return `<div class="box"><h4>Customer</h4><b>${h(c ? c.name : 'Walk-in Customer')}</b>${c ? `<div>${h(c.phone)}${c.email ? ' · ' + h(c.email) : ''}</div><div class="muted">${h(c.address || '')}</div><div class="muted">ID ${h(c.code)}</div>` : ''}${extra}</div>`;
+  return `<div class="box"><h4>Customer</h4><b>${h(c ? c.name : 'Walk-in customer')}</b>${c ? `<div>${h(c.phone)}${c.email ? ' · ' + h(c.email) : ''}</div><div class="muted">${h(c.address || '')}</div><div class="muted">ID ${h(c.code)}</div>` : ''}${extra}</div>`;
 }
 
 function invoiceDoc(s) {
@@ -356,7 +356,7 @@ function warrantyDoc(w) {
     <div class="box"><h4>${isRepair ? 'Device' : 'Product'}</h4><b>${h(isRepair ? w.device : prod ? prod.name : '')}</b>${w.imei ? `<div class="mono">IMEI ${h(w.imei)}</div>` : ''}${w.serial ? `<div class="mono">S/N ${h(w.serial)}</div>` : ''}</div></div>
     <div class="grid2"><div class="box"><h4>${isRepair ? 'Repair job' : 'Invoice'}</h4>${h(isRepair ? w.jobNo : w.invoiceNo)}${isRepair && w.invoiceNo ? `<div class="muted">Original invoice ${h(w.invoiceNo)}</div>` : ''}</div>
     <div class="box"><h4>Validity</h4><b>${fmtDate(w.start)} → ${fmtDate(warrantyEnd(w))}</b><div class="muted">${isRepair ? 'Separate from the original product warranty' : `${w.months} months · ${h(w.provider)} warranty · ${h(CONDITIONS[w.condition] || '')}`}</div></div></div>
-    ${w.replacesWarrantyId ? `<div class="box" style="margin-bottom:12px"><h4>Warranty replacement</h4>This unit (<span class="mono">${h(w.imei || w.serial)}</span>) replaces defective unit <span class="mono">${h(w.replacedDeviceCode)}</span> — ref ${h(w.replacementNo)}. ${w.mode === 'remaining' ? `Remaining original warranty (originally from ${fmtDate(w.originalStart)}).` : `Warranty period set at replacement: until ${fmtDate(w.end)}.`}</div>` : ''}
+    ${w.replacesWarrantyId ? `<div class="box" style="margin-bottom:12px"><h4>Warranty replacement</h4>This unit (<span class="mono">${h(w.imei || w.serial)}</span>) replaces the defective unit <span class="mono">${h(w.replacedDeviceCode)}</span> — ref ${h(w.replacementNo)}. ${w.mode === 'remaining' ? `Remaining original warranty (originally from ${fmtDate(w.originalStart)}).` : `Warranty period set at replacement: until ${fmtDate(w.end)}.`}</div>` : ''}
     ${comps}<div class="terms"><b>Terms & conditions:</b> ${h(w.terms)}</div><div class="sign"><div>Customer</div><div>For ${h(db.settings.shopName)}</div></div></div>`;
 }
 function repairDoc(r, kind = 'receipt') {

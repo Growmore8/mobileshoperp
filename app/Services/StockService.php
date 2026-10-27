@@ -24,7 +24,7 @@ class StockService
                 Shop::fail('Enter a non-zero quantity.');
             }
             if ($p->tracking !== 'qty' && ! isset(self::DEVICE_TYPES[$d['type']])) {
-                Shop::fail('Invalid adjustment type for a serialized unit.');
+                Shop::fail('Invalid adjustment type for a serialised unit.');
             }
             $adj = StockAdjustment::create([
                 'no' => DocNumber::next('adj', 'ADJ-'), 'product_id' => $p->id, 'device_id' => $d['device_id'] ?? null,
@@ -74,7 +74,7 @@ class StockService
                 Shop::fail('Only returned, damaged or missing units can be put back into stock.');
             }
             if ($new !== 'in_stock' && ! in_array($d->status, ['in_stock', 'returned'], true)) {
-                Shop::fail('Unit is '.Inventory::label($d->status).'; adjustment not allowed.');
+                Shop::fail('The unit is '.Inventory::label($d->status).'; adjustment is not allowed.');
             }
             $wasInStock = $d->status === 'in_stock';
             $d->update(['status' => $new, 'condition' => $new === 'damaged' ? 'damaged' : $d->condition]);

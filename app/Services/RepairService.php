@@ -64,7 +64,7 @@ class RepairService
                 }
             }
             if (! empty($d['technician_id']) && ! Shop::can('repairs', 'manage') && (int) $d['technician_id'] !== Auth::id()) {
-                Shop::fail('Only users with Repairs “Manage” permission can assign technicians.', 403);
+                Shop::fail('Only users with the Repairs “Manage” permission can assign technicians.', 403);
             }
             $own = Inventory::findDevice($imei ?: $serial);
             $estimate = Shop::money($d['estimate'] ?? 0);
@@ -124,7 +124,7 @@ class RepairService
         return DB::transaction(function () use ($r, $status, $note) {
             $r = self::lockOpen($r);
             if ($status === 'delivered') {
-                Shop::fail('Use “Deliver to customer” to complete the hand-over.');
+                Shop::fail('Use “Deliver to customer” to complete the handover.');
             }
             if ($status === 'cancelled') {
                 Shop::fail('Use “Cancel job” to cancel.');
@@ -136,7 +136,7 @@ class RepairService
                 Shop::fail('Customer approval of the estimate is required before starting the repair.');
             }
             if ($status === 'ready' && ! $r->diagnosis) {
-                Shop::fail('Record the diagnosis / work done before marking as ready.');
+                Shop::fail('Record the diagnosis / work done before marking the job as ready.');
             }
             $prev = $r->status;
             $r->status = $status;
@@ -174,7 +174,7 @@ class RepairService
             $r = self::lockOpen($r);
             $p = Product::lockForUpdate()->findOrFail($productId);
             if ($p->tracking !== 'qty') {
-                Shop::fail('Serialized items cannot be issued as repair parts.');
+                Shop::fail('Serialised items cannot be issued as repair parts.');
             }
             if ($qty < 1) {
                 Shop::fail('Enter a valid quantity.');
@@ -223,7 +223,7 @@ class RepairService
                 Shop::fail('Enter an amount above zero.');
             }
             if ($amount > $bal + 0.001) {
-                Shop::fail('Amount exceeds balance due ('.Shop::fmt($bal).').');
+                Shop::fail('Amount exceeds the balance due ('.Shop::fmt($bal).').');
             }
             $pay = $r->payments()->create(['kind' => 'receipt', 'method' => $method, 'amount' => $amount, 'user_id' => Auth::id()]);
             self::event($r, 'Payment received '.Shop::fmt($amount)." ($method)");
@@ -249,7 +249,7 @@ class RepairService
                 Shop::fail('Enter the name of the person collecting the device.');
             }
             if (empty($d['confirm'])) {
-                Shop::fail('Customer confirmation of device condition is required.');
+                Shop::fail("Customer confirmation of the device's condition is required.");
             }
             if (Shop::setting('require_signature', true) && empty($d['signature'])) {
                 Shop::fail('Customer signature is required for delivery.');

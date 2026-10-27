@@ -25,7 +25,7 @@
   </table>
 @endif
 @if($kind === 'delivery')
-  <div class="box" style="margin-top:10px"><h4>Hand-over</h4>Collected by <b>{{ $r->collected_by }}</b> · Handed over by {{ $r->deliverer?->name }} on {{ $r->delivered_at?->format('d M Y, H:i') }}
+  <div class="box" style="margin-top:10px"><h4>Handover</h4>Collected by <b>{{ $r->collected_by }}</b> · Handed over by {{ $r->deliverer?->name }} on {{ $r->delivered_at?->format('d M Y, H:i') }}
     @if($r->warranty)<div>Repair warranty <b>{{ $r->warranty->no }}</b>: @foreach($r->warranty->components as $c){{ $c->label }} until {{ $c->end_date->format('d M Y') }}@if(!$loop->last); @endif @endforeach</div>@else<div class="muted">No repair warranty applicable.</div>@endif
     @if($signature)<div style="margin-top:6px"><img src="{{ $signature }}" style="height:55px"></div>@elseif($r->signature_path)<div class="ok" style="margin-top:4px">✔ Signed by customer on delivery</div>@endif
   </div>

@@ -377,7 +377,7 @@ Object.assign(ACT, {
       } else items.push({ key: uid('ln'), productId: p.id, qty: Math.min(it.qty, p.qty), price: it.price, discount: 0 });
     });
     POS.items = items; POS.customerId = q.customerId || ''; POS.discount = q.discount || 0;
-    toast(missing ? `${missing} unit(s) not in stock were skipped. IMEIs auto-selected — tap “Change” to pick others.` : 'Quotation loaded. IMEIs were auto-selected (oldest stock first).', missing ? 'warning' : 'success', 5000);
+    toast(missing ? `${missing} unit(s) not in stock were skipped. IMEIs were auto-selected — tap “Change” to pick others.` : 'Quotation loaded. IMEIs were auto-selected (oldest stock first).', missing ? 'warning' : 'success', 5000);
     location.hash = '#/pos';
   },
 });
@@ -444,7 +444,7 @@ Object.assign(ACT, {
         <div class="form-grid">
           ${field('Returned stock goes to', `<select class="select" name="restock"><option value="stock">Sellable stock (item OK)</option><option value="inspect">Hold for inspection</option><option value="damaged">Damaged / defective (write off)</option></select>`, { hint: 'Every option is recorded as a traceable stock movement.' })}
           ${field('Refund method', `<select class="select" name="method">${opts(db.settings.paymentMethods)}</select>`)}
-          ${field('Reason', '<textarea class="input" name="reason" rows="2" required placeholder="e.g. Customer changed mind within 7 days"></textarea>', { req: true, cls: 'span-all' })}
+          ${field('Reason', '<textarea class="input" name="reason" rows="2" required placeholder="e.g. Customer changed their mind within 7 days"></textarea>', { req: true, cls: 'span-all' })}
         </div>
         <div class="alert alert-warning">${icon('alert')}<div>Warranties of returned devices are voided automatically. The refund equals the amount paid above the new invoice total.</div></div></form>`,
       foot: `<button class="btn" data-dismiss>Cancel</button><button class="btn btn-danger" type="submit" form="rf-form">${icon('undo')} Process return</button>`,
