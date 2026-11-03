@@ -17,6 +17,10 @@ const TONES = {
   adj: { pending: ['Pending approval', 'amber'], approved: ['Approved', 'green'], rejected: ['Rejected', 'red'] },
   condition: { new: ['New', 'blue'], used: ['Used', 'amber'], refurbished: ['Refurbished', 'purple'], damaged: ['Damaged', 'red'], under_repair: ['Under repair', 'cyan'] },
 };
+/* Developer-only "Delete permanently" button; back = where to go afterwards */
+function devDel(type, id, what, back = '', small = false) {
+  return IS_DEV ? `<button class="btn ${small ? 'btn-xs btn-ghost' : 'btn-ghost'} danger-text" data-action="dev-del" data-type="${type}" data-id="${id}" data-what="${h(what)}" data-back="${back}" title="Developer only">${icon('trash', small ? 'ic-sm' : '')} ${small ? 'Delete' : 'Delete permanently'}</button>` : '';
+}
 function badge(text, tone = 'gray', cls = '') { return `<span class="badge badge-${tone} ${cls}">${h(text)}</span>`; }
 function sbadge(type, value) { const t = (TONES[type] || {})[value] || [value, 'gray']; return badge(t[0], t[1]); }
 function payState(total, paid) { if (total <= 0) return 'none'; if (paid >= total - 0.001) return 'paid'; if (paid > 0) return 'partial'; return 'unpaid'; }

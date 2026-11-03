@@ -103,7 +103,8 @@ class CatalogController extends Controller
             'models.*.code' => 'nullable|string|max:20', 'models.*.sku' => 'nullable|string|max:60', 'models.*.barcode' => 'nullable|string|max:60',
             'models.*.cost' => 'nullable|numeric|min:0', 'models.*.price' => 'required|numeric|min:0', 'models.*.min_stock' => 'nullable|integer|min:0',
             'models.*.active' => 'boolean',
-        ], ['models.*.variant.required' => 'Enter a name for every model (for example iPhone 11).', 'models.*.price.required' => 'Enter a price for every model.']);
+        ], ['code.unique' => 'This product code is already used by another product (it may be inactive). Leave the code blank to number it automatically, or choose another code.',
+            'models.*.variant.required' => 'Enter a name for every model (for example iPhone 11).', 'models.*.price.required' => 'Enter a price for every model.']);
         if (! (Shop::can('reports', 'manage') || Shop::can('purchases', 'view'))) {
             unset($data['cost']); // users who cannot see costs cannot set them
             foreach (array_keys($data['models'] ?? []) as $i) {

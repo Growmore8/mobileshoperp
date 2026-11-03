@@ -489,3 +489,15 @@ async function boot() {
   await loadMeta();
   if (await restoreSession()) render(); else renderLogin();
 }
+
+/* Developer-only permanent delete (devDel() buttons) */
+ACT['dev-del'] = async (el) => {
+  const { type, id, what, back } = el.dataset;
+  const ok = await confirmDialog({ title: `Delete ${what} permanently?`, message: 'Developer tool for removing test entries. The record and everything it caused (stock movements, payments, warranties) are removed and stock is recounted. This cannot be undone.', confirmText: 'Delete permanently', danger: true });
+  if (!ok) return;
+  const r = await api('DELETE', `/dev/${type}/${id}`);
+  document.querySelectorAll('.modal-backdrop').forEach((m) => m.remove());
+  await syncData(true);
+  toast(`${r.deleted} deleted.`);
+  if (back) location.hash = back; else refresh();
+};

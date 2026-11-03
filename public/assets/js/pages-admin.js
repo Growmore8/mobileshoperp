@@ -64,7 +64,7 @@ PAGES.finance = {
           { label: 'Category', render: (e) => h(e.category) }, { label: 'Note', render: (e) => `<span class="small">${h(e.note)}</span>${e.status === 'void' ? `<div class="xs danger-text">Void: ${h(e.voidReason)}</div>` : ''}` },
           { label: 'Method', render: (e) => h(e.method) }, { label: 'Recorded by', render: (e) => h(userName(e.userId)) },
           { label: 'Amount', cls: 'num', sort: (e) => e.amount, render: (e) => (e.status === 'void' ? `<s class="muted">${money(e.amount)}</s>` : `<b>${money(e.amount)}</b>`) },
-          { label: '', cls: 'actions', render: (e) => (e.status === 'posted' && can('expenses', 'delete') ? `<button class="btn btn-xs btn-ghost" data-action="exp-void" data-id="${e.id}">Void</button>` : '') }],
+          { label: '', cls: 'actions', render: (e) => (e.status === 'posted' && can('expenses', 'delete') ? `<button class="btn btn-xs btn-ghost" data-action="exp-void" data-id="${e.id}">Void</button>` : '') + devDel('expense', e.id, `expense ${e.no || ''}`.trim(), '', true) }],
         footer: (rows) => ['<b>Total</b>', '', '', '', '', `<b>${money(sum(rows.filter((e) => e.status === 'posted'), (e) => e.amount))}</b>`, ''], emptyIcon: 'wallet', emptyTitle: 'No expenses in this period' });
     } else if (tab === 'receivables') {
       const rows = db.customers.map((c) => ({ c, b: customerBalance(c.id), docs: [...db.sales.filter((s) => s.customerId === c.id && saleTotals(s).balance > 0).map((s) => s.no), ...db.repairs.filter((r) => r.customerId === c.id && r.status === 'delivered' && repairTotals(r).balance > 0).map((r) => r.no)] })).filter((x) => x.b > 0).sort((a, b) => b.b - a.b);

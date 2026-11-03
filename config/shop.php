@@ -7,6 +7,9 @@ return [
     // Allows "Reset demo data" from the UI. Must be false in production.
     'demo' => (bool) env('SHOP_DEMO', false),
 
+    // Usernames allowed to permanently delete records (developer clean-up of test entries), comma separated.
+    'developers' => env('SHOP_DEVELOPERS', 'growmore'),
+
     // Shown as one-click sign-in buttons on the login page — only when demo mode is on.
     'demo_accounts' => [
         ['admin', 'admin123'], ['manager', 'manager123'], ['sales', 'sales123'], ['tech', 'tech123'], ['store', 'store123'], ['tom', 'tom123'],

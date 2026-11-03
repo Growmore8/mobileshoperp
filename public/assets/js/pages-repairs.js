@@ -186,6 +186,7 @@ function repairDetail(id) {
     can('repairs', 'print') ? `<button class="btn" data-action="rep-print" data-id="${r.id}">${icon('printer')} Print…</button>` : '',
     open && can('repairs', 'cancel') ? `<button class="btn btn-ghost danger-text" data-action="rep-cancel" data-id="${r.id}">${icon('ban')} Cancel job</button>` : '',
     r.status === 'ready' && can('repairs', 'deliver') ? `<button class="btn btn-success" data-action="rep-deliver" data-id="${r.id}">${icon('handshake')} Deliver to customer</button>` : '',
+    devDel('repair', r.id, `repair ${r.no}`, '#/repairs'),
   ].join('');
   return pageHead(`<span class="mono">${h(r.no)}</span> · ${h(r.brand)} ${h(r.model)}`, `${h(r.type)} · received ${fmtDateTime(r.receivedAt)} by ${h(userName(r.createdBy))}`, acts, `<a href="#/repairs">Repairs</a> ${icon('chevronRight', 'ic-sm')} ${h(r.no)}`) + `
     <div class="flex flex-wrap mb">${sbadge('repair', r.status)}${isOverdue(r) ? badge(`Overdue — due ${fmtDate(r.expected)}`, 'red') : ''}${r.priority !== 'Normal' ? badge(r.priority + ' priority', 'amber') : ''}${r.isWarrantyRepair ? badge('Warranty repair — free of charge', 'purple') : ''}${sbadge('pay', payState(t.total, t.paid))}</div>

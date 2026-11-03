@@ -49,7 +49,8 @@ class SyncController extends Controller
         $changed = fn (Builder $q, string $col = 'updated_at') => $since ? $q->where($col, '>', $since) : $q;
         $out = ['now' => $now->toIso8601ZuluString('millisecond'), 'full' => ! $since];
 
-        $out['me'] = ['id' => (string) $user->id, 'name' => $user->name, 'username' => $user->username, 'roleId' => (string) $user->role_id, 'active' => $user->active];
+        $out['me'] = ['id' => (string) $user->id, 'name' => $user->name, 'username' => $user->username, 'roleId' => (string) $user->role_id, 'active' => $user->active,
+            'developer' => \App\Services\DevDelete::isDeveloper($user)];
         $out['settings'] = ClientShape::settings(Setting::map());
         $out['roles'] = Role::orderBy('id')->get()->map(fn ($r) => $shape->role($r))->all();
         $out['users'] = User::orderBy('name')->get()->map(fn ($u) => $shape->user($u, $can('users')))->all();

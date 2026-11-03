@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\ActivityLogController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
+use App\Http\Controllers\Api\DevController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\InventoryController;
@@ -57,6 +58,8 @@ Route::middleware(['auth:sanctum', 'active', 'throttle:api'])->group(function ()
     Route::post('products', [CatalogController::class, 'storeProduct'])->middleware('perm:products,create');
     Route::put('products/{product}', [CatalogController::class, 'updateProduct'])->middleware('perm:products,edit');
     Route::delete('products/{product}', [CatalogController::class, 'destroyProduct'])->middleware('perm:products,delete');
+    // developer-only permanent delete of test records (sale, purchase, product, repair, customer, supplier, expense, quotation)
+    Route::delete('dev/{type}/{id}', [DevController::class, 'destroy'])->whereNumber('id');
     Route::post('products/{product}/image', [CatalogController::class, 'productImage'])->middleware('perm:products,edit');
 
     Route::get('customers', [CatalogController::class, 'customers'])->middleware('perm:customers,view|pos,view|repairs,create');

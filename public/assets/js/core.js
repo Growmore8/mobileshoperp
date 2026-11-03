@@ -10,6 +10,7 @@ const THEME_KEY = 'mobicore_theme';
 
 let db = null;
 let currentUser = null;
+let IS_DEV = false; // developer account (SHOP_DEVELOPERS on the server): may permanently delete test records
 const SEED_CTX = null; // the demo generator now lives on the server (DemoSeeder)
 
 /* ---------------- Modules & permissions ---------------- */
@@ -185,6 +186,7 @@ async function syncData(full = false) {
     });
   });
   currentUser = db.users.find((u) => u.id === r.me.id) || r.me;
+  IS_DEV = !!r.me.developer;
   return changed;
 }
 

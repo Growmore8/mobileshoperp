@@ -90,7 +90,7 @@ function openProductForm(p) {
       ${field('Description', `<textarea class="input" name="description" rows="2">${h(p.description)}</textarea>`, { cls: 'span-2' })}
       <label class="check span-all"><input type="checkbox" name="active" ${p.active ? 'checked' : ''}> Active (available for sale & purchase)</label>
     </form>`,
-    foot: `${!isNew && can('products', 'delete') ? `<button class="btn btn-ghost danger-text" id="pf-del" style="margin-right:auto">${icon('trash')} Delete</button>` : ''}<button class="btn" data-dismiss>Cancel</button><button class="btn btn-primary" type="submit" form="prod-form">${icon('check')} Save product</button>`,
+    foot: `${!isNew && can('products', 'delete') ? `<button class="btn btn-ghost danger-text" id="pf-del" style="margin-right:auto">${icon('trash')} Delete</button>` : ''}${!isNew ? devDel('product', p.id, `product ${p.name}`) : ''}<button class="btn" data-dismiss>Cancel</button><button class="btn btn-primary" type="submit" form="prod-form">${icon('check')} Save product</button>`,
     onMount(el) {
       const f = $('#prod-form', el);
       const mbox = $('#pf-mrows', el);
@@ -388,7 +388,7 @@ function pfDraw() {
     const p = find('products', l.productId);
     const ser = p && p.serialized && PF.mode !== 'po';
     return `<div class="card" style="box-shadow:none;background:var(--surface-2)"><div class="card-body form-grid cols-4">
-      <div class="field span-2"><label>Product ${i + 1}</label><select class="select" data-pl="${l.key}" data-f="productId"><option value="">Select product…</option>${groups}</select></div>
+      <div class="field span-2"><label>Product ${i + 1}</label><select class="select" data-pl="${l.key}" data-f="productId"><option value="">${prods.length ? 'Select product…' : 'No products yet — add them in Products first'}</option>${groups}</select></div>
       ${field('Quantity', `<input class="input" data-pl="${l.key}" data-f="qty" inputmode="numeric" value="${l.qty}">`)}
       ${field('Unit cost', `<input class="input" data-pl="${l.key}" data-f="cost" inputmode="decimal" value="${l.cost}" placeholder="${p ? p.cost : ''}">`)}
       ${p && p.serialized ? field('Condition', `<select class="select" data-pl="${l.key}" data-f="condition">${opts(Object.entries(CONDITIONS).slice(0, 3), l.condition)}</select>`) : ''}
@@ -477,6 +477,7 @@ function purchaseDetail(id) {
     p.status === 'received' && t.balance > 0 && can('purchases', 'edit') ? `<button class="btn btn-primary" data-action="pur-pay" data-id="${p.id}">${icon('cash')} Pay supplier</button>` : '',
     p.status === 'received' && can('purchases', 'approve') ? `<button class="btn" data-action="pur-return" data-id="${p.id}">${icon('undo')} Return to supplier</button>` : '',
     can('purchases', 'print') ? `<button class="btn" data-action="pur-print" data-id="${p.id}">${icon('printer')} Print</button><button class="btn" data-action="pdf" data-path="/documents/purchase/${p.id}" data-name="${p.no}">${icon('download')} PDF</button>` : '',
+    devDel('purchase', p.id, `purchase ${p.no}`, '#/purchases'),
   ].join('');
   return pageHead(`<span class="mono">${h(p.no)}</span>`, `${h(sup.name)} · ${fmtDate(p.date)}${p.supplierInvoice ? ' · Supplier invoice ' + h(p.supplierInvoice) : ''}`, acts, `<a href="#/purchases">Purchases</a> ${icon('chevronRight', 'ic-sm')} ${h(p.no)}`) + `
     <div class="flex mb">${sbadge('purchase', p.status)}${p.status === 'received' ? sbadge('pay', payState(t.net, t.paid)) : ''}${p.expected && p.status === 'ordered' ? badge('Expected ' + fmtDate(p.expected), 'blue') : ''}</div>
@@ -553,7 +554,7 @@ function supplierDetail(id) {
   const pur = db.purchases.filter((p) => p.supplierId === id);
   const prods = db.products.filter((p) => p.supplierId === id || pur.some((x) => x.items.some((i) => i.productId === p.id)));
   const showMoney = can('purchases', 'view');
-  return pageHead(h(s.name), `${h(s.code)} · ${h(s.contact)} · ${h(s.phone)}`, can('suppliers', 'edit') ? `<button class="btn" data-action="sup-edit" data-id="${s.id}">${icon('edit')} Edit</button>` : '', `<a href="#/suppliers">Suppliers</a> ${icon('chevronRight', 'ic-sm')} ${h(s.name)}`) + `
+  return pageHead(h(s.name), `${h(s.code)} · ${h(s.contact)} · ${h(s.phone)}`, `${can('suppliers', 'edit') ? `<button class="btn" data-action="sup-edit" data-id="${s.id}">${icon('edit')} Edit</button>` : ''}${devDel('supplier', s.id, `supplier ${s.name}`, '#/suppliers')}`, `<a href="#/suppliers">Suppliers</a> ${icon('chevronRight', 'ic-sm')} ${h(s.name)}`) + `
     ${showMoney ? `<div class="kpis mb">${kpi({ label: 'Total purchased', value: money(sum(pur.filter((p) => p.status === 'received'), (p) => p.total)), icon: 'truck', tone: 'blue', foot: `${pur.length} documents` })}${kpi({ label: 'Paid', value: money(sum(pur, (p) => purchaseTotals(p).paid)), icon: 'wallet', tone: 'green' })}${kpi({ label: 'Outstanding payable', value: money(supplierBalance(s.id)), icon: 'alert', tone: 'red' })}${kpi({ label: 'Products supplied', value: prods.length, icon: 'package', tone: 'purple' })}</div>` : ''}
     <div class="grid grid-main-side"><div class="card"><div class="card-head"><h3>Purchase history</h3></div>${dataTable('sup-pur', { rows: () => pur, search: false, rowHref: (p) => '#/purchases/' + p.id, columns: [
       { label: 'Purchase', cls: 'td-main', render: (p) => `<div class="cell-main mono">${h(p.no)}</div><div class="cell-sub">${fmtDate(p.date)}</div>` },

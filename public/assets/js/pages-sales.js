@@ -370,7 +370,7 @@ PAGES.sales = {
           { label: 'Items', render: (q) => h(q.items.map((i) => `${i.qty}× ${i.name}`).join(', ')) },
           { label: 'Valid until', render: (q) => (daysUntil(q.validUntil) < 0 ? badge('Expired ' + fmtDate(q.validUntil), 'gray') : fmtDate(q.validUntil)) },
           { label: 'Total', cls: 'num', render: (q) => `<b>${money(q.total)}</b>` },
-          { label: '', cls: 'actions', render: (q) => `${can('pos', 'print') ? `<button class="btn btn-xs" data-action="quote-print" data-id="${q.id}">${icon('printer', 'ic-sm')} Print</button><button class="btn btn-xs" data-action="pdf" data-path="/documents/quotation/${q.id}" data-name="${q.no}">${icon('download', 'ic-sm')} PDF</button>` : ''}${can('pos', 'create') ? `<button class="btn btn-xs btn-primary" data-action="quote-load" data-id="${q.id}">${icon('cart', 'ic-sm')} Load in POS</button>` : ''}` },
+          { label: '', cls: 'actions', render: (q) => `${can('pos', 'print') ? `<button class="btn btn-xs" data-action="quote-print" data-id="${q.id}">${icon('printer', 'ic-sm')} Print</button><button class="btn btn-xs" data-action="pdf" data-path="/documents/quotation/${q.id}" data-name="${q.no}">${icon('download', 'ic-sm')} PDF</button>` : ''}${can('pos', 'create') ? `<button class="btn btn-xs btn-primary" data-action="quote-load" data-id="${q.id}">${icon('cart', 'ic-sm')} Load in POS</button>` : ''}${devDel('quotation', q.id, `quotation ${q.no}`, '', true)}` },
         ],
         emptyIcon: 'quote', emptyTitle: 'No quotations yet',
       });
@@ -425,6 +425,7 @@ function saleDetail(id) {
     can('sales', 'edit') && t.balance > 0 ? `<button class="btn btn-primary" data-action="sale-pay" data-id="${s.id}">${icon('cash')} Receive payment</button>` : '',
     can('sales', 'refund') && s.status !== 'cancelled' && s.status !== 'refunded' ? `<button class="btn" data-action="sale-refund" data-id="${s.id}">${icon('undo')} Return / refund</button>` : '',
     can('sales', 'cancel') && s.status === 'completed' ? `<button class="btn btn-danger" data-action="sale-cancel" data-id="${s.id}">${icon('ban')} Cancel invoice</button>` : '',
+    devDel('sale', s.id, `sale ${s.no}`, '#/sales'),
   ].join('');
   const restricted = !can('sales', 'refund') ? `<div class="alert alert-info mb">${icon('lock')}<div>Returns, refunds and cancellations require additional permissions. Ask a manager.</div></div>` : '';
   const items = s.items.map((it) => {
@@ -558,6 +559,7 @@ function customerDetail(id, query) {
     can('repairs', 'create') ? `<a class="btn" href="#/repairs/new?customer=${c.id}">${icon('wrench')} New repair</a>` : '',
     can('sales', 'edit') && bal > 0 ? `<button class="btn" data-action="cust-pay" data-id="${c.id}">${icon('cash')} Receive payment</button>` : '',
     can('pos', 'create') ? `<button class="btn btn-primary" data-action="cust-sale" data-id="${c.id}">${icon('cart')} New sale</button>` : '',
+    devDel('customer', c.id, `customer ${c.name}`, '#/customers'),
   ].join('');
   const tabs = tabsHtml([{ key: 'overview', label: 'Overview' }, ...(showMoney ? [{ key: 'invoices', label: 'Invoices', count: sales.length }] : []), { key: 'devices', label: 'Devices & warranties', count: ws.length }, { key: 'repairs', label: 'Repairs', count: reps.length }, { key: 'claims', label: 'Claims', count: claims.length }], tab);
   let body = '';
