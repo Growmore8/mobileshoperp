@@ -59,6 +59,16 @@ class PurchaseAndStockTest extends ShopTestCase
         $this->assertFalse($m12->fresh()->active);
         $this->assertSame('P-1001-03', Product::where('variant', 'iPhone 15 Pro Max')->value('code'));
 
+        // switching the product off switches its models off; switching it back on brings them back
+        $edit = fn (bool $on) => $this->putJson("/api/products/{$group['id']}", ['name' => 'Back cover', 'category_id' => $cat, 'tracking' => 'qty', 'price' => 0, 'active' => $on,
+            'models' => [['id' => $m11->id, 'variant' => 'iPhone 11', 'price' => 1500], ['id' => Product::where('variant', 'iPhone 15 Pro Max')->value('id'), 'variant' => 'iPhone 15 Pro Max', 'price' => 1800]]])->assertOk();
+        $edit(false);
+        $this->assertFalse($m11->fresh()->active);
+        $edit(true);
+        $this->assertTrue($m11->fresh()->active);
+        $this->assertFalse($m12->fresh()->active); // removed earlier, stays removed
+        $this->assertSame(1, \App\Models\ActivityLog::where('action', 'Product deactivated')->where('detail', 'like', '%iPhone 12%')->count());
+
         // a product that already has its own stock cannot become a group
         $this->receiveStock(1);
         $this->as($this->admin)->putJson("/api/products/{$this->battery->id}", ['name' => 'A-Series Battery', 'category_id' => $cat, 'tracking' => 'qty', 'price' => 1900, 'models' => [['variant' => 'A15', 'price' => 1900]]])

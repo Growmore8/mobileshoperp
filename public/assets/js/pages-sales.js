@@ -62,7 +62,7 @@ function posGrid() {
     const st = stockOf(p); const cat = db.categories.find((c) => c.id === p.categoryId);
     const inCart = POS.items.filter((i) => i.productId === p.id).reduce((s, i) => s + i.qty, 0);
     return `<button class="p-card ${st - (p.serialized ? inCart : inCart) <= 0 ? 'out' : ''}" data-action="pos-add" data-id="${p.id}" aria-label="Add ${h(p.name)}">
-      <div class="p-img" style="background:${cat.color}14;color:${cat.color}">${p.image ? `<img src="${p.image}" alt="${h(p.name)}">` : productArt(p)}</div>
+      <div class="p-img" style="background:${cat.color}14;color:${cat.color}">${productImage(p) ? `<img src="${productImage(p)}" alt="${h(p.name)}">` : productArt(p)}</div>
       <div class="p-name">${h(p.name)}</div>
       <div class="xs muted truncate">${p.hasModels ? `${modelsOf(p).filter((x) => x.active).length} models — tap to choose` : h(p.color || p.brand)}${p.condition !== 'new' ? ' · ' + CONDITIONS[p.condition] : ''}</div>
       <div class="p-meta"><span class="p-price">${p.hasModels ? '<span class="xs muted">from</span> ' : ''}${money(p.price)}</span>${st <= 0 ? badge('Out', 'red') : st <= p.minStock ? badge(st + ' left', 'amber') : badge(st + ' in stock', 'green')}</div>

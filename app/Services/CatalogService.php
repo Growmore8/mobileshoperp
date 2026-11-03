@@ -57,7 +57,7 @@ class CatalogService
             if ($models !== null) {
                 self::saveModels($p, $models);
             } elseif ($p->has_models) { // product details changed: copy them to its models
-                self::saveModels($p, $p->children()->get()->map(fn ($m) => ['id' => $m->id, 'variant' => $m->variant, 'active' => $m->active])->all());
+                self::saveModels($p, $p->children()->get()->map(fn ($m) => ['id' => $m->id, 'variant' => $m->variant, 'active' => $p->wasChanged('active') ? true : $m->active])->all());
             }
 
             return $p->fresh();
@@ -129,7 +129,9 @@ class CatalogService
             $keep[] = $m->id;
         }
         foreach ($existing->except($keep) as $old) {
-            self::deleteProduct($old);
+            if ($old->active || ! StockMovement::where('product_id', $old->id)->exists()) { // removed earlier and kept for its history: leave as is
+                self::deleteProduct($old);
+            }
         }
         $kept = Product::whereIn('id', $keep)->get();
         $parent->update(['has_models' => true, 'price' => (float) $kept->min('price'), 'cost' => (float) $kept->min('cost')]);

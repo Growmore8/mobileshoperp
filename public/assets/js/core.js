@@ -389,6 +389,7 @@ const svc = {
     const before = d.id ? find('products', d.id) : null;
     if (d.image && d.image.startsWith('data:')) await uploadImage(`/products/${id}/image`, 'image', d.image);
     else if (!d.image && before && before.image) await uploadImage(`/products/${id}/image`, 'image', null);
+    if (d.models) { await syncData(true); return find('products', String(id)); } // removed models must disappear too
     return refreshAfter('products', id);
   },
   async deleteProduct(id) { const r = await api('DELETE', `/products/${id}`); await syncData(true); return r.result; },

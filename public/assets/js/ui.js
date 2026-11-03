@@ -51,8 +51,9 @@ function emptyState(ic, title, text = '', action = '') {
   return `<div class="empty">${icon(ic)}<h4>${h(title)}</h4>${text ? `<p class="small">${h(text)}</p>` : ''}${action ? `<div class="mt-sm">${action}</div>` : ''}</div>`;
 }
 function avatar(name, cls = '') { return `<span class="avatar ${cls}" style="background:${colorFor(name)}">${h(initials(name))}</span>`; }
+function productImage(p) { return (p && (p.image || (p.parentId && (find('products', p.parentId) || {}).image))) || ''; } // a model uses its product's photo
 function thumb(p) {
-  if (p && p.image) return `<span class="thumb"><img src="${p.image}" alt=""></span>`;
+  if (productImage(p)) return `<span class="thumb"><img src="${productImage(p)}" alt=""></span>`;
   const cat = p && db.categories.find((c) => c.id === p.categoryId);
   const col = cat ? cat.color : '#64748b';
   if (!p) return `<span class="thumb" style="background:${col}1a;color:${col}">${icon('package', 'ic-sm')}</span>`;

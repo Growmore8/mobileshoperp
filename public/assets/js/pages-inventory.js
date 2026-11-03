@@ -49,7 +49,8 @@ function openProductForm(p) {
   const hasMoves = !isNew && db.stockMoves.some((m) => m.productId === p.id || modelsOf(p).some((x) => x.id === m.productId));
   const canModels = isNew || p.hasModels || (!hasMoves && !stockOf(p));
   let useModels = !!p.hasModels;
-  const MODELS = p.hasModels ? modelsOf(p).sort(byName).map((x) => ({ key: uid('m'), id: x.id, variant: x.variant || '', code: x.code, sku: x.sku || '', barcode: x.barcode || '', cost: x.cost ?? '', price: x.price, minStock: x.minStock, active: x.active, stock: stockOf(x) })) : [];
+  // models removed earlier (kept inactive because of their history) are not listed; switching an inactive product back on brings all its models back
+  const MODELS = p.hasModels ? modelsOf(p).filter((x) => !p.active || x.active).sort(byName).map((x) => ({ key: uid('m'), id: x.id, variant: x.variant || '', code: x.code, sku: x.sku || '', barcode: x.barcode || '', cost: x.cost ?? '', price: x.price, minStock: x.minStock, active: true, stock: stockOf(x) })) : [];
   const m = openModal({
     title: isNew ? 'New product' : `Edit — ${h(p.name)}`, size: 'xl',
     body: `<form id="prod-form" class="form-grid cols-4" novalidate>
@@ -58,11 +59,11 @@ function openProductForm(p) {
       ${field('Product code', `<input class="input" name="code" value="${h(p.code)}" placeholder="Auto">`, { hint: 'Leave blank to auto-generate' })}
       ${field('Category', `<select class="select" name="categoryId" required>${opts(db.categories.map((c) => [c.id, c.name]), p.categoryId, 'Select…')}</select>`, { req: true })}
       ${field('Brand', `<input class="input" name="brand" value="${h(p.brand)}" list="brands-dl"><datalist id="brands-dl">${[...new Set(db.products.map((x) => x.brand))].map((b) => `<option value="${h(b)}">`).join('')}</datalist>`)}
-      ${field('Model', `<input class="input" name="model" value="${h(p.model)}">`)}
+      ${field('Model', `<input class="input" name="model" value="${h(p.model)}">`, { cls: 'pf-single' })}
       ${field('Variant', `<input class="input" name="variant" value="${h(p.variant)}" placeholder="8GB / 256GB">`, { cls: 'pf-single' })}
       ${field('Colour', `<input class="input" name="color" value="${h(p.color)}">`)}
-      ${field('Storage', `<input class="input" name="storage" value="${h(p.storage)}">`)}
-      ${field('RAM', `<input class="input" name="ram" value="${h(p.ram)}">`)}
+      ${field('Storage', `<input class="input" name="storage" value="${h(p.storage)}">`, { cls: 'pf-single' })}
+      ${field('RAM', `<input class="input" name="ram" value="${h(p.ram)}">`, { cls: 'pf-single' })}
       ${field('Condition', `<select class="select" name="condition">${opts(Object.entries(CONDITIONS).slice(0, 3), p.condition)}</select>`)}
       ${field('Default supplier', `<select class="select" name="supplierId">${opts(db.suppliers.map((s) => [s.id, s.name]), p.supplierId, '—')}</select>`)}
       <div class="form-section">Models</div>
