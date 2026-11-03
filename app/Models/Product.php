@@ -19,6 +19,7 @@ class Product extends Model
             'taxable' => 'boolean',
             'discountable' => 'boolean',
             'active' => 'boolean',
+            'has_models' => 'boolean',
             'qty' => 'integer',
             'min_stock' => 'integer',
             'warranty_months' => 'integer',
@@ -35,6 +36,17 @@ class Product extends Model
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    /** The product a model belongs to ("Back covers" for "Back covers – iPhone 11"). */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Product::class, 'parent_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(Product::class, 'parent_id');
     }
 
     public function devices(): HasMany

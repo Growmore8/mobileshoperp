@@ -38,6 +38,9 @@ class SaleService
                 if (! $p || ! $p->active) {
                     Shop::fail('A product in the cart is no longer available.');
                 }
+                if ($p->has_models) {
+                    Shop::fail("{$p->name} has several models — choose the model (for example {$p->name} – …).");
+                }
                 $qty = (int) $it['qty'];
                 if ($qty < 1) {
                     Shop::fail("{$p->name}: invalid quantity.");

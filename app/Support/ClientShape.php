@@ -119,7 +119,8 @@ final class ClientShape
     {
         return $this->cost([
             'id' => self::id($p->id), 'code' => $p->code, 'name' => $p->name, 'categoryId' => self::id($p->category_id), 'brand' => $p->brand,
-            'model' => $p->model, 'variant' => $p->variant, 'color' => $p->color, 'storage' => $p->storage, 'ram' => $p->ram,
+            'parentId' => self::id($p->parent_id), 'hasModels' => (bool) $p->has_models, 'variant' => $p->variant,
+            'model' => $p->model, 'color' => $p->color, 'storage' => $p->storage, 'ram' => $p->ram,
             'cost' => $p->cost, 'price' => $p->price, 'wholesale' => $p->wholesale, 'sku' => $p->sku, 'barcode' => $p->barcode,
             'serialized' => $p->tracking !== 'qty', 'idType' => $p->tracking === 'qty' ? '' : $p->tracking, 'condition' => $p->condition,
             'minStock' => $p->min_stock, 'qty' => $p->qty, 'warrantyMonths' => $p->warranty_months, 'warrantyProvider' => $p->warranty_provider,

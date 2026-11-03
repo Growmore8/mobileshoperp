@@ -836,3 +836,16 @@ body.sheet-open { overflow: hidden; }
   .sidebar, .topbar, .demo-ribbon, #toast-root, .no-print { display: none !important; }
   .main { margin: 0; }
 }
+
+/* Product models (Products page + product form) */
+#prod-form [hidden] { display: none !important; }
+.model-row { padding-left: 22px; }
+.model-branch { color: var(--muted); font-size: 15px; width: 18px; flex-shrink: 0; }
+.pf-models-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+.pf-models { min-width: 640px; }
+.pf-models th, .pf-models td { padding: 6px 8px; vertical-align: middle; }
+.pf-models td:first-child { min-width: 170px; }
+.pf-models .input-sm.num { text-align: right; max-width: 110px; margin-left: auto; }
+.pm-row { width: 100%; background: none; border: 0; border-bottom: 1px solid var(--border); cursor: pointer; color: inherit; font: inherit; }
+.pm-row:hover:not([disabled]) { background: var(--surface-2); }
+.pm-row[disabled] { opacity: .55; cursor: not-allowed; }

@@ -173,6 +173,9 @@ class RepairService
         return DB::transaction(function () use ($r, $productId, $qty, $price, $covered) {
             $r = self::lockOpen($r);
             $p = Product::lockForUpdate()->findOrFail($productId);
+            if ($p->has_models) {
+                Shop::fail("{$p->name} has several models — choose the model (for example {$p->name} – …).");
+            }
             if ($p->tracking !== 'qty') {
                 Shop::fail('Serialised items cannot be issued as repair parts.');
             }

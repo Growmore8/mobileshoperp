@@ -37,6 +37,9 @@ class PurchaseService
             $seen = [];
             foreach ($d['items'] as &$it) {
                 $p = Product::findOrFail($it['product_id']);
+                if ($p->has_models) {
+                    Shop::fail("{$p->name} has several models — choose the model (for example {$p->name} – …).");
+                }
                 $it['qty'] = (int) $it['qty'];
                 $it['cost'] = Shop::money($it['cost'] ?? $p->cost);
                 if ($it['qty'] < 1) {

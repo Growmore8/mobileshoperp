@@ -28,7 +28,7 @@ function customerOptions(selected) {
 PAGES.pos = {
   title: 'POS / New Sale', perm: ['pos', 'view'],
   render() {
-    const cats = db.categories.filter((c) => db.products.some((p) => p.categoryId === c.id && p.active));
+    const cats = db.categories.filter((c) => db.products.some((p) => p.categoryId === c.id && pickable(p)));
     return `<div class="pos" id="pos">
       <div class="pos-left">
         <div class="pos-search"><div class="input-icon">${icon('scan')}<input id="pos-q" class="input" type="search" placeholder="Scan barcode / IMEI or search name, SKU, brand…" value="${h(POS.q)}" autocomplete="off" aria-label="Search products"></div><button class="btn" style="height:46px" data-action="pos-bulk" data-tip="Scan many IMEIs at once">${icon('layers')}<span class="hide-sm">Bulk scan</span></button></div>
@@ -51,7 +51,8 @@ PAGES.pos = {
 };
 function posProducts() {
   const q = POS.q.trim().toLowerCase(); const qn = normId(q).toLowerCase();
-  return db.products.filter((p) => p.active && (!POS.cat || p.categoryId === POS.cat) && (!q || [p.name, p.sku, p.barcode, p.brand, p.model, p.code].some((x) => x && x.toLowerCase().includes(q))
+  // without a search the grid shows "Back covers" once (tap → choose the model); a search such as "iphone 11" shows the matching models directly
+  return db.products.filter((p) => p.active && (q ? !p.hasModels : !p.parentId) && (!POS.cat || p.categoryId === POS.cat) && (!q || [p.name, p.sku, p.barcode, p.brand, p.model, p.code].some((x) => x && x.toLowerCase().includes(q))
     || (qn.length >= 4 && p.serialized && db.devices.some((d) => d.productId === p.id && d.status === 'in_stock' && [d.imei1, d.imei2, d.serial].some((x) => x && x.toLowerCase().includes(qn))))));
 }
 function posGrid() {
@@ -63,8 +64,8 @@ function posGrid() {
     return `<button class="p-card ${st - (p.serialized ? inCart : inCart) <= 0 ? 'out' : ''}" data-action="pos-add" data-id="${p.id}" aria-label="Add ${h(p.name)}">
       <div class="p-img" style="background:${cat.color}14;color:${cat.color}">${p.image ? `<img src="${p.image}" alt="${h(p.name)}">` : productArt(p)}</div>
       <div class="p-name">${h(p.name)}</div>
-      <div class="xs muted truncate">${h(p.color || p.brand)}${p.condition !== 'new' ? ' · ' + CONDITIONS[p.condition] : ''}</div>
-      <div class="p-meta"><span class="p-price">${money(p.price)}</span>${st <= 0 ? badge('Out', 'red') : st <= p.minStock ? badge(st + ' left', 'amber') : badge(st + ' in stock', 'green')}</div>
+      <div class="xs muted truncate">${p.hasModels ? `${modelsOf(p).filter((x) => x.active).length} models — tap to choose` : h(p.color || p.brand)}${p.condition !== 'new' ? ' · ' + CONDITIONS[p.condition] : ''}</div>
+      <div class="p-meta"><span class="p-price">${p.hasModels ? '<span class="xs muted">from</span> ' : ''}${money(p.price)}</span>${st <= 0 ? badge('Out', 'red') : st <= p.minStock ? badge(st + ' left', 'amber') : badge(st + ' in stock', 'green')}</div>
       ${inCart ? `<div class="xs" style="color:var(--primary);font-weight:600">${inCart} in cart</div>` : ''}
     </button>`;
   }).join('') : `<div class="card" style="grid-column:1/-1">${emptyState('search', 'No products match', 'Try another name, SKU, barcode or IMEI.')}</div>`;
@@ -76,7 +77,7 @@ function posScan(val) {
     if (dev.status !== 'in_stock') { toast(`${deviceCode(dev)} is ${DEVICE_STATUS[dev.status].toLowerCase()} — cannot be sold.`, 'error'); return; }
     posAddDevice(dev); POS.q = ''; $('#pos-q').value = ''; posGrid(); return;
   }
-  const p = db.products.find((x) => x.active && (x.barcode === v || x.sku.toLowerCase() === v.toLowerCase()));
+  const p = db.products.find((x) => pickable(x) && (x.barcode === v || (x.sku || '').toLowerCase() === v.toLowerCase()));
   if (p) { posAdd(p.id); POS.q = ''; $('#pos-q').value = ''; posGrid(); return; }
   const list = posProducts();
   if (list.length === 1) posAdd(list[0].id);
@@ -84,12 +85,29 @@ function posScan(val) {
 }
 function posAdd(pid) {
   const p = find('products', pid);
+  if (p.hasModels) return posPickModel(p);
   if (p.serialized) return posPickDevice(p);
   const st = stockOf(p);
   const line = POS.items.find((i) => i.productId === pid);
   if ((line ? line.qty : 0) + 1 > st) { toast(st ? `Only ${st} × ${p.name} in stock.` : `${p.name} is out of stock.`, 'error'); return; }
   if (line) line.qty += 1; else POS.items.push({ key: uid('ln'), productId: pid, qty: 1, price: p.price, discount: 0 });
   posCart(); posGrid();
+}
+function posPickModel(g) {
+  const list = modelsOf(g).filter((x) => x.active).sort(byName);
+  const m = openModal({ title: `Choose the model — ${h(g.name)}`,
+    body: `<div class="input-icon mb">${icon('search')}<input class="input" id="pm-q" type="search" placeholder="Type a model, e.g. 12 Pro" autocomplete="off"></div><div class="list" id="pm-list"></div>`,
+    onMount(el) {
+      const draw = () => {
+        const q = $('#pm-q', el).value.trim().toLowerCase();
+        const rows = list.filter((x) => !q || [x.variant, x.code, x.sku, x.barcode].some((v) => v && v.toLowerCase().includes(q)));
+        $('#pm-list', el).innerHTML = rows.length ? rows.map((x) => { const st = stockOf(x); return `<button type="button" class="list-row pm-row" data-id="${x.id}" ${st <= 0 ? 'disabled' : ''}><div class="grow" style="min-width:0;text-align:left"><div class="bold truncate">${h(x.variant)}</div><div class="xs muted mono">${h(x.code)}${x.sku ? ' · ' + h(x.sku) : ''}</div></div><div class="right"><div class="bold">${money(x.price)}</div>${st <= 0 ? badge('Out', 'red') : st <= x.minStock ? badge(st + ' left', 'amber') : badge(st + ' in stock', 'green')}</div></button>`; }).join('') : emptyState('search', 'No model matches');
+      };
+      draw();
+      $('#pm-q', el).addEventListener('input', draw);
+      $('#pm-list', el).addEventListener('click', (e) => { const b = e.target.closest('.pm-row'); if (!b || b.disabled) return; m.close(); posAdd(b.dataset.id); });
+      if (window.matchMedia('(min-width: 1025px)').matches) $('#pm-q', el).focus();
+    } });
 }
 function posAddDevice(d) {
   if (POS.items.some((i) => i.deviceId === d.id)) { toast('That IMEI is already in the cart.', 'warning'); return; }

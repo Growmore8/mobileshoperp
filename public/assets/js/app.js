@@ -17,7 +17,7 @@ const NAV = [
   ] },
   { title: 'Inventory', items: [
     { key: 'products', label: 'Products', icon: 'package', perm: ['products', 'view'] },
-    { key: 'inventory', label: 'Stock Control', icon: 'warehouse', perm: ['inventory', 'view'], count: () => db.products.filter((p) => p.active && stockState(p) !== 'ok').length, warn: true },
+    { key: 'inventory', label: 'Stock Control', icon: 'warehouse', perm: ['inventory', 'view'], count: () => db.products.filter((p) => pickable(p) && stockState(p) !== 'ok').length, warn: true },
     { key: 'imei', label: 'IMEI Tracker', icon: 'scan', perm: ['inventory', 'view'] },
     { key: 'purchases', label: 'Purchases', icon: 'truck', perm: ['purchases', 'view'] },
     { key: 'suppliers', label: 'Suppliers', icon: 'handshake', perm: ['suppliers', 'view'] },

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Device;
 use App\Models\DeviceIdentifier;
+use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\StockAdjustment;
 
@@ -22,6 +23,46 @@ class PurchaseAndStockTest extends ShopTestCase
         // second receipt at a higher cost → weighted average
         $this->postJson('/api/purchases', ['supplier_id' => $this->supplier->id, 'status' => 'received', 'items' => [['product_id' => $this->glass->id, 'qty' => 50, 'cost' => 60]]])->assertCreated();
         $this->assertEquals(50.0, $this->glass->fresh()->cost);
+        $this->assertStockMatchesMovements();
+    }
+
+    public function test_product_with_models_keeps_price_and_stock_per_model(): void
+    {
+        $this->as($this->admin);
+        $cat = \App\Models\Category::where('name', 'Cases & Protection')->value('id');
+        $group = $this->postJson('/api/products', ['name' => 'Back covers', 'code' => 'P-1001', 'category_id' => $cat, 'brand' => 'Pastel', 'tracking' => 'qty', 'price' => 0,
+            'models' => [['variant' => 'iPhone 11', 'price' => 1390, 'cost' => 280], ['variant' => 'iPhone 12', 'price' => 1450, 'cost' => 300, 'barcode' => '8901001']]])
+            ->assertCreated()->assertJsonPath('data.has_models', true)->json('data');
+        $m11 = Product::where('parent_id', $group['id'])->where('variant', 'iPhone 11')->first();
+        $m12 = Product::where('barcode', '8901001')->first();
+        $this->assertSame('Back covers – iPhone 11', $m11->name);
+        $this->assertSame(['P-1001-01', 'P-1001-02'], [$m11->code, $m12->code]);
+        $this->assertSame('Pastel', $m12->brand);
+        $this->assertEquals(1390, $group['price']); // "from" price
+
+        // receiving and selling happen per model; the group itself holds no stock
+        $base = ['supplier_id' => $this->supplier->id, 'status' => 'received'];
+        $this->postJson('/api/purchases', $base + ['items' => [['product_id' => $group['id'], 'qty' => 5, 'cost' => 280]]])
+            ->assertStatus(422)->assertJsonPath('message', 'Back covers has several models — choose the model (for example Back covers – …).');
+        $this->postJson('/api/purchases', $base + ['items' => [['product_id' => $m11->id, 'qty' => 5, 'cost' => 280], ['product_id' => $m12->id, 'qty' => 3, 'cost' => 300]]])->assertCreated();
+        $this->assertSame([5, 3], [$m11->fresh()->qty, $m12->fresh()->qty]);
+        $this->postJson('/api/sales', ['items' => [['product_id' => $m12->id, 'qty' => 1]], 'payments' => [['method' => 'Cash', 'amount' => 1450]]])
+            ->assertCreated();
+        $this->assertSame('Back covers – iPhone 12', \App\Models\SaleItem::latest('id')->value('name'));
+        $this->assertSame(2, $m12->fresh()->qty);
+        $this->assertEquals(7, collect($this->getJson('/api/products?q=Back')->json('data'))->firstWhere('id', $group['id'])['stock']);
+
+        // renaming the product renames its models; a removed model with history is deactivated, not deleted
+        $this->putJson("/api/products/{$group['id']}", ['name' => 'Back cover', 'category_id' => $cat, 'tracking' => 'qty', 'price' => 0,
+            'models' => [['id' => $m11->id, 'variant' => 'iPhone 11', 'price' => 1500], ['variant' => 'iPhone 15 Pro Max', 'price' => 1800]]])->assertOk();
+        $this->assertSame(['Back cover – iPhone 11', 1500.0], [$m11->fresh()->name, $m11->fresh()->price]);
+        $this->assertFalse($m12->fresh()->active);
+        $this->assertSame('P-1001-03', Product::where('variant', 'iPhone 15 Pro Max')->value('code'));
+
+        // a product that already has its own stock cannot become a group
+        $this->receiveStock(1);
+        $this->as($this->admin)->putJson("/api/products/{$this->battery->id}", ['name' => 'A-Series Battery', 'category_id' => $cat, 'tracking' => 'qty', 'price' => 1900, 'models' => [['variant' => 'A15', 'price' => 1900]]])
+            ->assertStatus(422);
         $this->assertStockMatchesMovements();
     }
 

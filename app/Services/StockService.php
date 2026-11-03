@@ -17,6 +17,9 @@ class StockService
     {
         return DB::transaction(function () use ($d) {
             $p = Product::findOrFail($d['product_id']);
+            if ($p->has_models) {
+                Shop::fail("{$p->name} has several models — choose the model (for example {$p->name} – …).");
+            }
             if ($p->tracking !== 'qty' && empty($d['device_id'])) {
                 Shop::fail('Select the specific IMEI / serial unit.');
             }

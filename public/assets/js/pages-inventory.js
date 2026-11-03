@@ -12,33 +12,44 @@ PAGES.products = {
     return pageHead('Products & Categories', 'Phones, accessories, wearables and spare parts. Serialised items are tracked per IMEI / serial number.',
       `${can('products', 'export') ? `<button class="btn" data-action="prod-export">${icon('download')} Export</button>` : ''}${can('products', 'create') ? `<button class="btn btn-primary" data-action="prod-new">${icon('plus')} New product</button>` : ''}`) +
       `<div class="card">${dataTable('products', {
-        rows: () => db.products, q: query.q || '', placeholder: 'Search name, SKU, barcode, brand…',
-        searchText: (p) => [p.name, p.code, p.sku, p.barcode, p.brand, p.model, p.color].join(' '),
+        rows: productRows, q: query.q || '', placeholder: 'Search name, model, SKU, barcode, brand…',
+        searchText: (p) => [p.name, p.code, p.sku, p.barcode, p.brand, p.model, p.color, ...(p.hasModels ? modelsOf(p).map((x) => `${x.variant} ${x.code} ${x.sku || ''} ${x.barcode || ''}`) : [])].join(' '),
         filters: [
           { key: 'cat', label: 'All categories', options: db.categories.map((c) => [c.id, c.name]), fn: (p, v) => p.categoryId === v },
           { key: 'track', label: 'Any tracking', options: [['imei', 'IMEI'], ['serial', 'Serial number'], ['qty', 'Quantity']], fn: (p, v) => (v === 'qty' ? !p.serialized : p.idType === v) },
           { key: 'st', label: 'Active & inactive', options: [['1', 'Active only'], ['0', 'Inactive only']], fn: (p, v) => p.active === (v === '1') },
         ],
         columns: [
-          { label: 'Product', cls: 'td-main', sort: (p) => p.name, render: (p) => `<div class="flex">${thumb(p)}<div style="min-width:0"><div class="cell-main">${h(p.name)}${p.active ? '' : ' ' + badge('Inactive', 'gray')}</div><div class="cell-sub mono">${h(p.code)} · ${h(p.sku)}</div></div></div>`, csv: (p) => p.name },
+          { label: 'Product', cls: 'td-main', sort: (p) => p.name, render: (p) => (p.parentId
+            ? `<div class="flex model-row"><span class="model-branch" aria-hidden="true">↳</span><div style="min-width:0"><div class="cell-main">${h(p.variant || p.name)}${p.active ? '' : ' ' + badge('Inactive', 'gray')}</div><div class="cell-sub mono">${h(p.code)}${p.sku ? ' · ' + h(p.sku) : ''}</div></div></div>`
+            : `<div class="flex">${thumb(p)}<div style="min-width:0"><div class="cell-main">${h(p.name)}${p.hasModels ? ' ' + badge(`${modelsOf(p).filter((x) => x.active).length} models`, 'blue', 'no-dot') : ''}${p.active ? '' : ' ' + badge('Inactive', 'gray')}</div><div class="cell-sub mono">${h(p.code)}${p.sku ? ' · ' + h(p.sku) : ''}</div></div></div>`), csv: (p) => p.name },
           { label: 'Category', render: (p) => h(catName(p.categoryId)), csv: (p) => catName(p.categoryId) },
           { label: 'Brand', sort: (p) => p.brand, render: (p) => h(p.brand), csv: (p) => p.brand },
           { label: 'Tracking', render: (p) => badge(trackLabel(p), p.serialized ? 'purple' : 'gray', 'no-dot'), csv: trackLabel },
           ...(cost ? [{ label: 'Cost', cls: 'num', sort: (p) => p.cost, render: (p) => money(p.cost), csv: (p) => p.cost }] : []),
-          { label: 'Price', cls: 'num', sort: (p) => p.price, render: (p) => `<b>${money(p.price)}</b>`, csv: (p) => p.price },
+          { label: 'Price', cls: 'num', sort: (p) => p.price, render: (p) => `${p.hasModels ? '<span class="xs muted">from</span> ' : ''}<b>${money(p.price)}</b>`, csv: (p) => p.price },
           { label: 'Stock', cls: 'num', sort: stockOf, render: (p) => `${stockOf(p)} ${stockState(p) !== 'ok' ? sbadge('stock', stockState(p)) : ''}`, csv: stockOf },
           { label: 'Warranty', render: (p) => (p.warrantyMonths ? `${p.warrantyMonths}m <span class="xs muted">${h(p.warrantyProvider)}</span>` : p.repairWarrantyDays ? `<span class="xs">${p.repairWarrantyDays}d repair</span>` : '<span class="muted">—</span>'), csv: (p) => p.warrantyMonths },
-          { label: '', cls: 'actions', render: (p) => (can('products', 'edit') ? `<button class="btn btn-xs" data-action="prod-edit" data-id="${p.id}">${icon('edit', 'ic-sm')} Edit</button>` : '') },
+          { label: '', cls: 'actions', render: (p) => (can('products', 'edit') ? `<button class="btn btn-xs" data-action="prod-edit" data-id="${p.parentId || p.id}">${icon('edit', 'ic-sm')} Edit</button>` : '') },
         ],
       })}</div>`;
   },
 };
+/* Products A–Z, each product with models followed by its models */
+function productRows() {
+  const out = [];
+  db.products.filter((p) => !p.parentId).sort(byName).forEach((p) => { out.push(p); if (p.hasModels) out.push(...modelsOf(p).sort(byName)); });
+  return out.concat(db.products.filter((p) => p.parentId && !find('products', p.parentId)));
+}
 function openProductForm(p) {
   const isNew = !p;
   p = p || { categoryId: '', serialized: false, idType: '', condition: 'new', minStock: 3, warrantyMonths: 0, warrantyProvider: 'Manufacturer', usedWarrantyMonths: 3, taxable: true, discountable: true, active: true };
   let image = p.image || '';
   const cost = canSeeCost();
-  const hasMoves = !isNew && db.stockMoves.some((m) => m.productId === p.id);
+  const hasMoves = !isNew && db.stockMoves.some((m) => m.productId === p.id || modelsOf(p).some((x) => x.id === m.productId));
+  const canModels = isNew || p.hasModels || (!hasMoves && !stockOf(p));
+  let useModels = !!p.hasModels;
+  const MODELS = p.hasModels ? modelsOf(p).sort(byName).map((x) => ({ key: uid('m'), id: x.id, variant: x.variant || '', code: x.code, sku: x.sku || '', barcode: x.barcode || '', cost: x.cost ?? '', price: x.price, minStock: x.minStock, active: x.active, stock: stockOf(x) })) : [];
   const m = openModal({
     title: isNew ? 'New product' : `Edit — ${h(p.name)}`, size: 'xl',
     body: `<form id="prod-form" class="form-grid cols-4" novalidate>
@@ -48,22 +59,27 @@ function openProductForm(p) {
       ${field('Category', `<select class="select" name="categoryId" required>${opts(db.categories.map((c) => [c.id, c.name]), p.categoryId, 'Select…')}</select>`, { req: true })}
       ${field('Brand', `<input class="input" name="brand" value="${h(p.brand)}" list="brands-dl"><datalist id="brands-dl">${[...new Set(db.products.map((x) => x.brand))].map((b) => `<option value="${h(b)}">`).join('')}</datalist>`)}
       ${field('Model', `<input class="input" name="model" value="${h(p.model)}">`)}
-      ${field('Variant', `<input class="input" name="variant" value="${h(p.variant)}" placeholder="8GB / 256GB">`)}
+      ${field('Variant', `<input class="input" name="variant" value="${h(p.variant)}" placeholder="8GB / 256GB">`, { cls: 'pf-single' })}
       ${field('Colour', `<input class="input" name="color" value="${h(p.color)}">`)}
       ${field('Storage', `<input class="input" name="storage" value="${h(p.storage)}">`)}
       ${field('RAM', `<input class="input" name="ram" value="${h(p.ram)}">`)}
       ${field('Condition', `<select class="select" name="condition">${opts(Object.entries(CONDITIONS).slice(0, 3), p.condition)}</select>`)}
       ${field('Default supplier', `<select class="select" name="supplierId">${opts(db.suppliers.map((s) => [s.id, s.name]), p.supplierId, '—')}</select>`)}
-      <div class="form-section">Pricing & tax</div>
-      ${cost ? field('Cost price', `<input class="input" name="cost" inputmode="decimal" required value="${p.cost ?? ''}">`, { req: true }) : `<input type="hidden" name="cost" value="${p.cost ?? 0}">`}
-      ${field('Retail price', `<input class="input" name="price" inputmode="decimal" required value="${p.price ?? ''}">`, { req: true })}
-      ${field('Wholesale price', `<input class="input" name="wholesale" inputmode="decimal" value="${p.wholesale ?? ''}">`)}
+      <div class="form-section">Models</div>
+      <div class="span-all" style="grid-column:1/-1">${canModels
+        ? `<label class="check" ${p.hasModels ? 'hidden' : ''}><input type="checkbox" id="pf-use-models" ${useModels ? 'checked' : ''}> This product comes in several models <span class="muted">(e.g. back covers for iPhone 11, iPhone 12, 15 Pro Max…)</span></label>
+           <div id="pf-models" ${useModels ? '' : 'hidden'}><p class="hint" style="margin:6px 0 10px">Each model has its own price and stock. Staff choose the model when receiving stock and at the POS. Leave Code blank to number it automatically (${h(p.code || 'P-1001')}-01, -02…).</p><div class="pf-models-wrap"><table class="table pf-models"><thead><tr><th>Model <span class="req"></span></th><th>Code</th><th>Barcode</th>${cost ? '<th class="num">Cost</th>' : ''}<th class="num">Price <span class="req"></span></th><th class="num">Min</th><th class="num">Stock</th><th></th></tr></thead><tbody id="pf-mrows"></tbody></table></div><button type="button" class="btn btn-sm" id="pf-madd" style="margin-top:8px">${icon('plus', 'ic-sm')} Add model</button></div>`
+        : `<p class="hint">This product already has its own stock, so models can't be added to it. To sell it in several models, create a new product and tick “This product comes in several models”.</p>`}</div>
+      <div class="form-section pf-single">Pricing & tax</div>
+      ${cost ? field('Cost price', `<input class="input" name="cost" inputmode="decimal" required value="${p.cost ?? ''}">`, { req: true, cls: 'pf-single' }) : `<input type="hidden" name="cost" value="${p.cost ?? 0}">`}
+      ${field('Retail price', `<input class="input" name="price" inputmode="decimal" required value="${p.price ?? ''}">`, { req: true, cls: 'pf-single' })}
+      ${field('Wholesale price', `<input class="input" name="wholesale" inputmode="decimal" value="${p.wholesale ?? ''}">`, { cls: 'pf-single' })}
       <div class="field"><label>Options</label><label class="check"><input type="checkbox" name="taxable" ${p.taxable ? 'checked' : ''}> Taxable (${db.settings.taxRate}%)</label><label class="check"><input type="checkbox" name="discountable" ${p.discountable ? 'checked' : ''}> Discount eligible</label></div>
       <div class="form-section">Identification & stock</div>
       ${field('Stock tracking', `<select class="select" name="idType" ${hasMoves ? 'disabled' : ''}><option value="" ${!p.serialized ? 'selected' : ''}>Quantity-based</option><option value="imei" ${p.idType === 'imei' ? 'selected' : ''}>Serialised — IMEI</option><option value="serial" ${p.idType === 'serial' ? 'selected' : ''}>Serialised — Serial no.</option></select>`, { hint: hasMoves ? 'Locked — stock history exists' : 'Phones use IMEI tracking' })}
-      ${field('SKU', `<input class="input" name="sku" value="${h(p.sku)}">`)}
-      ${field('Barcode', `<input class="input" name="barcode" value="${h(p.barcode)}" inputmode="numeric">`)}
-      ${field('Minimum stock level', `<input class="input" name="minStock" inputmode="numeric" value="${p.minStock}">`, { hint: 'Low-stock alert threshold' })}
+      ${field('SKU', `<input class="input" name="sku" value="${h(p.sku)}">`, { cls: 'pf-single' })}
+      ${field('Barcode', `<input class="input" name="barcode" value="${h(p.barcode)}" inputmode="numeric">`, { cls: 'pf-single' })}
+      ${field('Minimum stock level', `<input class="input" name="minStock" inputmode="numeric" value="${p.minStock}">`, { hint: useModels ? 'Starting value for new models' : 'Low-stock alert threshold' })}
       <div class="form-section">Warranty</div>
       ${field('Warranty (months)', `<input class="input" name="warrantyMonths" inputmode="numeric" value="${p.warrantyMonths}">`, { hint: '0 = no product warranty' })}
       ${field('Warranty provider', `<select class="select" name="warrantyProvider">${opts(['Manufacturer', 'Distributor', 'Shop'], p.warrantyProvider)}</select>`)}
@@ -77,6 +93,40 @@ function openProductForm(p) {
     foot: `${!isNew && can('products', 'delete') ? `<button class="btn btn-ghost danger-text" id="pf-del" style="margin-right:auto">${icon('trash')} Delete</button>` : ''}<button class="btn" data-dismiss>Cancel</button><button class="btn btn-primary" type="submit" form="prod-form">${icon('check')} Save product</button>`,
     onMount(el) {
       const f = $('#prod-form', el);
+      const mbox = $('#pf-mrows', el);
+      const drawModels = () => {
+        if (!mbox) return;
+        mbox.innerHTML = MODELS.map((x) => `<tr data-key="${x.key}">
+          <td><input class="input input-sm" data-mf="variant" value="${h(x.variant)}" placeholder="iPhone 11" aria-label="Model"></td>
+          <td><input class="input input-sm mono" data-mf="code" value="${h(x.code)}" placeholder="Auto" aria-label="Code"></td>
+          <td><input class="input input-sm mono" data-mf="barcode" value="${h(x.barcode)}" inputmode="numeric" aria-label="Barcode"></td>
+          ${cost ? `<td><input class="input input-sm num" data-mf="cost" value="${h(x.cost)}" inputmode="decimal" aria-label="Cost"></td>` : ''}
+          <td><input class="input input-sm num" data-mf="price" value="${h(x.price)}" inputmode="decimal" aria-label="Price"></td>
+          <td><input class="input input-sm num" data-mf="minStock" value="${h(x.minStock)}" inputmode="numeric" aria-label="Minimum stock"></td>
+          <td class="num">${x.id ? x.stock : '—'}</td>
+          <td><button type="button" class="btn btn-xs btn-ghost danger-text" data-mrm="${x.key}" aria-label="Remove model" ${MODELS.length === 1 ? 'disabled' : ''}>${icon('trash', 'ic-sm')}</button></td>
+        </tr>`).join('');
+      };
+      const newModel = () => ({ key: uid('m'), variant: '', code: '', sku: '', barcode: '', cost: '', price: '', minStock: Number(f.minStock.value) || 0, active: true });
+      const setMode = (on) => {
+        useModels = on;
+        $$('.pf-single', el).forEach((x) => { x.hidden = on; });
+        f.price.required = !on; if (f.cost.type !== 'hidden') f.cost.required = !on;
+        const box = $('#pf-models', el); if (box) box.hidden = !on;
+        if (on && !MODELS.length) { MODELS.push(newModel(), newModel()); drawModels(); }
+      };
+      if (mbox) {
+        drawModels(); setMode(useModels);
+        const tick = $('#pf-use-models', el); tick && tick.addEventListener('change', () => setMode(tick.checked));
+        $('#pf-madd', el).addEventListener('click', () => { MODELS.push(newModel()); drawModels(); mbox.querySelector('tr:last-child [data-mf=variant]').focus(); });
+        mbox.addEventListener('input', (e) => { const t = e.target.closest('[data-mf]'); if (!t) return; const x = MODELS.find((r) => r.key === t.closest('tr').dataset.key); x[t.dataset.mf] = t.value; });
+        mbox.addEventListener('click', async (e) => {
+          const b = e.target.closest('[data-mrm]'); if (!b) return;
+          const x = MODELS.find((r) => r.key === b.dataset.mrm);
+          if (x.id && !(await confirmDialog({ title: `Remove ${h(x.variant)}?`, message: 'A model with sales or stock history is deactivated instead of deleted, so past bills stay correct.', confirmText: 'Remove', danger: true }))) return;
+          MODELS.splice(MODELS.indexOf(x), 1); drawModels();
+        });
+      }
       f.categoryId.addEventListener('change', () => { if (isNew) { const c = db.categories.find((x) => x.id === f.categoryId.value); if (c) f.warrantyMonths.value = c.warrantyMonths; if (c && c.kind === 'phone') f.idType.value = 'imei'; } });
       $('#pf-file', el).addEventListener('change', async (e) => { try { image = await readImage(e.target.files[0], 400); $('#pf-img', el).innerHTML = `<img src="${image}" alt="">`; } catch (err) { handleError(err); } });
       const rm = $('#pf-rm', el); rm && rm.addEventListener('click', () => { image = ''; $('#pf-img', el).innerHTML = isNew ? icon('camera') : productArt(p); });
@@ -89,7 +139,12 @@ function openProductForm(p) {
         const idType = hasMoves ? p.idType : d.idType;
         const data = { ...d, idType, serialized: !!idType, minStock: Number(d.minStock) || 0, warrantyMonths: Number(d.warrantyMonths) || 0, usedWarrantyMonths: Number(d.usedWarrantyMonths) || 0, repairWarrantyDays: d.repairWarrantyDays === '' ? null : Number(d.repairWarrantyDays), wholesale: Number(d.wholesale) || 0, image };
         if (!isNew) data.id = p.id;
-        const saved = await svc.saveProduct(data); m.close(); toast(`${saved.name} saved.`); refresh();
+        if (useModels) {
+          const bad = MODELS.find((x) => !String(x.variant).trim() || String(x.price).trim() === '' || isNaN(Number(x.price)));
+          if (bad) throw new AppError('Enter a model name and a price for every model, or remove the empty rows.');
+          data.models = MODELS; data.price = data.price || 0; data.cost = data.cost || 0;
+        }
+        const saved = await svc.saveProduct(data); m.close(); toast(`${saved.name} saved${useModels ? ` with ${MODELS.length} models` : ''}.`); refresh();
       });
     },
   });
@@ -105,7 +160,7 @@ PAGES.inventory = {
   title: 'Stock Control', perm: ['inventory', 'view'],
   render({ query }) {
     const tab = query.tab || 'stock';
-    const act = db.products.filter((p) => p.active);
+    const act = db.products.filter(pickable);
     const cost = canSeeCost();
     const pend = db.adjustments.filter((a) => a.status === 'pending').length;
     const head = pageHead('Stock Control', `Costing: ${h(db.settings.costing)}`, `${can('inventory', 'print') ? `<button class="btn" data-action="inv-print">${icon('printer')} Stock sheet</button>` : ''}${can('inventory', 'create') ? `<button class="btn" data-action="adj-new">${icon('layers')} Stock adjustment</button>` : ''}${can('purchases', 'create') ? `<a class="btn btn-primary" href="#/purchases/new">${icon('truck')} Receive stock</a>` : ''}`);
@@ -180,7 +235,7 @@ Object.assign(ACT, {
   'moves-export': () => { need('inventory', 'export'); dtExport('moves', `stock-movements-${todayISO()}`); },
   'inv-print': () => {
     need('inventory', 'print');
-    const act = db.products.filter((p) => p.active);
+    const act = db.products.filter(pickable);
     printDoc('Stock sheet', `${docHeader('Stock Sheet', `<div>${fmtDateTime(new Date().toISOString())}</div>`)}<table><thead><tr><th>Product</th><th>SKU</th><th class="num">Min</th><th class="num">System qty</th><th class="num">Counted</th><th>Notes</th></tr></thead><tbody>${act.map((p) => `<tr><td>${h(p.name)}</td><td class="mono">${h(p.sku)}</td><td class="num">${p.minStock}</td><td class="num">${stockOf(p)}</td><td></td><td></td></tr>`).join('')}</tbody></table><div class="sign"><div>Counted by</div><div>Verified by</div></div>`);
   },
   'adj-approve': async (el) => { await svc.approveAdjustment(el.dataset.id); toast('Adjustment approved — stock updated.'); refresh(); },
@@ -188,7 +243,7 @@ Object.assign(ACT, {
   'adj-new': () => {
     const m = openModal({ title: 'Stock adjustment', size: 'lg',
       body: `<form id="adj-form" class="form-grid" novalidate>
-        ${field('Product', `<select class="select" name="productId" required>${opts(db.products.filter((p) => p.active).map((p) => [p.id, `${p.name} (${stockOf(p)} on hand)`]), '', 'Select product…')}</select>`, { req: true, cls: 'span-all' })}
+        ${field('Product', `<select class="select" name="productId" required>${opts(db.products.filter(pickable).sort(byName).map((p) => [p.id, `${p.name} (${stockOf(p)} on hand)`]), '', 'Select product…')}</select>`, { req: true, cls: 'span-all' })}
         <div id="adj-dyn" class="span-all form-grid" style="grid-column:1/-1"></div>
         ${field('Reason', '<textarea class="input" name="reason" rows="2" required placeholder="e.g. Screen guard cracked while fitting"></textarea>', { req: true, cls: 'span-all' })}
         <div class="alert alert-info span-all">${icon('info')}<div>${can('inventory', 'approve') ? 'You have approval rights — the adjustment is applied immediately and logged.' : 'This adjustment will be pending until a manager approves it.'}</div></div>
@@ -327,8 +382,8 @@ function purchaseForm(query) {
 }
 function pfDraw() {
   const box = $('#pf-lines'); if (!box) return;
-  const prods = db.products.filter((p) => p.active);
-  const groups = db.categories.map((c) => `<optgroup label="${h(c.name)}">${prods.filter((p) => p.categoryId === c.id).map((p) => `<option value="${p.id}">${h(p.name)}</option>`).join('')}</optgroup>`).join('');
+  const prods = db.products.filter(pickable).sort(byName);
+  const groups = db.categories.map((c) => `<optgroup label="${h(c.name)}">${prods.filter((p) => p.categoryId === c.id).map((p) => `<option value="${p.id}">${h(p.name)}${p.sku ? ` (${h(p.sku)})` : ''}</option>`).join('')}</optgroup>`).join('');
   box.innerHTML = PF.lines.map((l, i) => {
     const p = find('products', l.productId);
     const ser = p && p.serialized && PF.mode !== 'po';

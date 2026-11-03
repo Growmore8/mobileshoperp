@@ -50,9 +50,12 @@ class CatalogController extends Controller
             ->when($f['category_id'] ?? null, fn ($q, $v) => $q->where('category_id', $v))
             ->when($f['tracking'] ?? null, fn ($q, $v) => $q->where('tracking', $v))
             ->when(isset($f['active']), fn ($q) => $q->where('active', (bool) $f['active']))
-            ->orderBy('name')->get()
-            ->map(function (Product $p) use ($inStock, $showCost) {
-                $stock = $p->tracking === 'qty' ? (int) $p->qty : (int) ($inStock[$p->id] ?? 0);
+            ->orderBy('name')->get();
+        $models = Product::whereNotNull('parent_id')->get(['id', 'parent_id', 'qty', 'tracking']);
+        $rows = $rows
+            ->map(function (Product $p) use ($inStock, $showCost, $models) {
+                $own = fn ($x) => $x->tracking === 'qty' ? (int) $x->qty : (int) ($inStock[$x->id] ?? 0);
+                $stock = $p->has_models ? $models->where('parent_id', $p->id)->sum($own) : $own($p);
                 $row = $p->toArray() + ['stock' => $stock, 'stock_state' => $stock <= 0 ? 'out' : ($stock <= $p->min_stock ? 'low' : 'ok')];
                 if (! $showCost) {
                     unset($row['cost']); // cost prices are financial data
@@ -96,9 +99,16 @@ class CatalogController extends Controller
             'warranty_provider' => 'nullable|in:Manufacturer,Distributor,Shop', 'used_warranty_months' => 'nullable|integer|min:0|max:120',
             'repair_warranty_days' => 'nullable|integer|min:0|max:730', 'taxable' => 'boolean', 'discountable' => 'boolean', 'active' => 'boolean',
             'supplier_id' => 'nullable|exists:suppliers,id', 'description' => 'nullable|string|max:2000',
-        ]);
+            'models' => 'sometimes|array|max:300', 'models.*.id' => 'nullable|integer', 'models.*.variant' => 'required|string|max:80',
+            'models.*.code' => 'nullable|string|max:20', 'models.*.sku' => 'nullable|string|max:60', 'models.*.barcode' => 'nullable|string|max:60',
+            'models.*.cost' => 'nullable|numeric|min:0', 'models.*.price' => 'required|numeric|min:0', 'models.*.min_stock' => 'nullable|integer|min:0',
+            'models.*.active' => 'boolean',
+        ], ['models.*.variant.required' => 'Enter a name for every model (for example iPhone 11).', 'models.*.price.required' => 'Enter a price for every model.']);
         if (! (Shop::can('reports', 'manage') || Shop::can('purchases', 'view'))) {
             unset($data['cost']); // users who cannot see costs cannot set them
+            foreach (array_keys($data['models'] ?? []) as $i) {
+                unset($data['models'][$i]['cost']);
+            }
         }
 
         return array_map(fn ($v) => $v === null ? null : $v, $data);

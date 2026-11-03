@@ -67,7 +67,7 @@ PAGES.dashboard = {
 
     /* Inventory */
     if (can('inventory', 'view')) {
-      const act = db.products.filter((p) => p.active);
+      const act = db.products.filter(pickable);
       const low = act.filter((p) => stockState(p) === 'low'), out = act.filter((p) => stockState(p) === 'out');
       const devs = db.devices.filter((d) => d.status === 'in_stock');
       const tiles = [
@@ -130,7 +130,7 @@ PAGES.dashboard = {
       lists.push(`<div class="card"><div class="card-head"><h3>Repairs needing attention</h3><a class="btn btn-sm btn-ghost" href="#/repairs">All jobs</a></div><div class="card-body flush">${att.length ? att.map((r) => `<a class="list-row" href="#/repairs/${r.id}"><span class="kpi-icon ${isOverdue(r) ? 'tone-red' : r.status === 'ready' ? 'tone-green' : 'tone-amber'}">${icon(isOverdue(r) ? 'clock' : 'wrench', 'ic-sm')}</span><div class="grow" style="min-width:0"><div class="bold small">${h(r.no)} · ${h(r.brand)} ${h(r.model)}</div><div class="xs muted truncate">${h(customerName(r.customerId))} · ${isOverdue(r) ? 'Overdue since ' + fmtDate(r.expected) : RS[r.status]}</div></div>${sbadge('repair', r.status)}</a>`).join('') : emptyState('checkCircle', 'Nothing urgent', 'No overdue or ready jobs.')}</div></div>`);
     }
     if (can('inventory', 'view')) {
-      const low = db.products.filter((p) => p.active && stockState(p) !== 'ok').sort((a, b) => stockOf(a) - stockOf(b)).slice(0, 6);
+      const low = db.products.filter((p) => pickable(p) && stockState(p) !== 'ok').sort((a, b) => stockOf(a) - stockOf(b)).slice(0, 6);
       lists.push(`<div class="card"><div class="card-head"><h3>Stock alerts</h3><a class="btn btn-sm btn-ghost" href="#/inventory?f=low">Stock control</a></div><div class="card-body flush">${low.length ? low.map((p) => `<div class="list-row">${thumb(p)}<div class="grow" style="min-width:0"><div class="bold small truncate">${h(p.name)}</div><div class="xs muted">Min ${p.minStock} · ${h(p.sku)}</div></div><div class="right"><div class="bold">${stockOf(p)}</div>${sbadge('stock', stockState(p))}</div></div>`).join('') : emptyState('checkCircle', 'Stock levels healthy')}</div></div>`);
     }
     if (can('users', 'view')) {

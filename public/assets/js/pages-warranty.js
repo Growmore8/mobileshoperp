@@ -266,7 +266,7 @@ function replacementCard(rec, title = 'Warranty replacement') {
 function openReplacementForm(claimId) {
   const c = find('claims', claimId); const w = find('warranties', c.warrantyId);
   const old = find('devices', w.deviceId); const op = find('products', old.productId);
-  const prods = db.products.filter((p) => p.serialized && p.active && (p.id === op.id || p.categoryId === op.categoryId));
+  const prods = db.products.filter((p) => p.serialized && pickable(p) && (p.id === op.id || p.categoryId === op.categoryId));
   let prodId = op.id, sel = null;
   const left = daysUntil(w.end);
   const stdMonths = op.warrantyMonths || w.months || 12;

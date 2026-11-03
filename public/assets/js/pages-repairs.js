@@ -181,7 +181,7 @@ function repairDetail(id) {
   const followUps = db.repairs.filter((x) => x.parentRepairId === r.id);
   const nextMap = { received: 'inspection', inspection: 'diagnosed', diagnosed: r.approval.status === 'approved' ? 'in_progress' : 'awaiting_approval', awaiting_approval: 'in_progress', awaiting_parts: 'in_progress', in_progress: 'completed', completed: 'qc', qc: 'ready' };
   const next = nextMap[r.status];
-  const parts = db.products.filter((p) => p.active && !p.serialized && ['parts', 'charge', 'audio'].includes(catKind(p.categoryId)));
+  const parts = db.products.filter((p) => pickable(p) && !p.serialized && ['parts', 'charge', 'audio'].includes(catKind(p.categoryId))).sort(byName);
   const acts = [
     can('repairs', 'print') ? `<button class="btn" data-action="rep-print" data-id="${r.id}">${icon('printer')} Print…</button>` : '',
     open && can('repairs', 'cancel') ? `<button class="btn btn-ghost danger-text" data-action="rep-cancel" data-id="${r.id}">${icon('ban')} Cancel job</button>` : '',

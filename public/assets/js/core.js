@@ -244,7 +244,15 @@ async function restoreSession() {
 const DEVICE_STATUS = { in_stock: 'In stock', sold: 'Sold', returned: 'Returned (inspection)', damaged: 'Damaged', missing: 'Missing', repair: 'Under repair', supplier_return: 'Returned to supplier', warranty_return: 'Warranty return (defective)' };
 const CONDITIONS = { new: 'New', used: 'Used', refurbished: 'Refurbished', damaged: 'Damaged', under_repair: 'Under repair' };
 
-function stockOf(p) { return p.serialized ? db.devices.filter((d) => d.productId === p.id && d.status === 'in_stock').length : (p.qty || 0); }
+function stockOf(p) {
+  if (p.hasModels) return sum(modelsOf(p), stockOf);
+  return p.serialized ? db.devices.filter((d) => d.productId === p.id && d.status === 'in_stock').length : (p.qty || 0);
+}
+/* Product models: "Back covers" (hasModels) holds "Back covers – iPhone 11", "– iPhone 12"… each with its own price and stock.
+   Stock is bought, sold and counted per model, so pick lists use pickable() and never offer the group itself. */
+function modelsOf(p) { return db.products.filter((x) => x.parentId === p.id); }
+function pickable(p) { return p.active && !p.hasModels; }
+const byName = (a, b) => String(a.name).localeCompare(String(b.name), undefined, { numeric: true, sensitivity: 'base' });
 function stockState(p) { const q = stockOf(p); if (q <= 0) return 'out'; if (q <= (p.minStock || 0)) return 'low'; return 'ok'; }
 function stockValue(p) {
   return p.serialized ? sum(db.devices.filter((d) => d.productId === p.id && d.status === 'in_stock'), (d) => d.cost) : (p.qty || 0) * (p.cost || 0);
@@ -370,6 +378,10 @@ const svc = {
       taxable: !!d.taxable, discountable: !!d.discountable, active: !!d.active, supplier_id: nn(d.supplierId), description: nn(d.description),
     };
     if (canSeeCost()) body.cost = num(d.cost) || 0;
+    if (d.models) {
+      body.models = d.models.map((x) => ({ id: x.id || null, variant: String(x.variant || '').trim(), code: nn(String(x.code || '').trim()), sku: nn(String(x.sku || '').trim()),
+        barcode: nn(String(x.barcode || '').trim()), price: num(x.price), min_stock: num(x.minStock) || 0, active: x.active !== false, ...(canSeeCost() ? { cost: num(x.cost) || 0 } : {}) }));
+    }
     const r = d.id ? await api('PUT', `/products/${d.id}`, body) : await api('POST', '/products', body);
     const id = r.data.id;
     const before = d.id ? find('products', d.id) : null;
@@ -521,8 +533,8 @@ const svc = {
 function getNotifications() {
   const n = []; const s = db.settings.notify;
   if (s.lowStock && can('inventory', 'view')) {
-    const out = db.products.filter((p) => p.active && stockState(p) === 'out');
-    const low = db.products.filter((p) => p.active && stockState(p) === 'low');
+    const out = db.products.filter((p) => pickable(p) && stockState(p) === 'out');
+    const low = db.products.filter((p) => pickable(p) && stockState(p) === 'low');
     if (out.length) n.push({ tone: 'red', icon: 'package', title: `${out.length} product(s) out of stock`, text: out.slice(0, 3).map((p) => p.name).join(', ') + (out.length > 3 ? '…' : ''), href: '#/inventory?f=out' });
     if (low.length) n.push({ tone: 'amber', icon: 'package', title: `${low.length} product(s) low on stock`, text: low.slice(0, 3).map((p) => p.name).join(', ') + (low.length > 3 ? '…' : ''), href: '#/inventory?f=low' });
   }

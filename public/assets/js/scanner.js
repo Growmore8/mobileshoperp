@@ -19,7 +19,7 @@ function beep(ok) {
 }
 
 function openBulkScanner({ mode, productId = '', expected = 0, existing = [], taken = [], title, onDone }) {
-  const serialProducts = db.products.filter((p) => p.serialized && p.active);
+  const serialProducts = db.products.filter((p) => p.serialized && pickable(p));
   let prodId = productId;
   let dual = false;
   let pending = null;           // first IMEI of a dual-SIM pair waiting for its second scan
