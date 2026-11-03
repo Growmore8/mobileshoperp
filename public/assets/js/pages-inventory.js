@@ -382,13 +382,17 @@ function purchaseForm(query) {
 }
 function pfDraw() {
   const box = $('#pf-lines'); if (!box) return;
-  const prods = db.products.filter(pickable).sort(byName);
-  const groups = db.categories.map((c) => `<optgroup label="${h(c.name)}">${prods.filter((p) => p.categoryId === c.id).map((p) => `<option value="${p.id}">${h(p.name)}${p.sku ? ` (${h(p.sku)})` : ''}</option>`).join('')}</optgroup>`).join('');
+  const prods = db.products.filter(pickable);
+  const tops = db.products.filter((p) => p.active && !p.parentId && (!p.hasModels || modelsOf(p).some(pickable))).sort(byName);
+  const groups = db.categories.map((c) => `<optgroup label="${h(c.name)}">${tops.filter((p) => p.categoryId === c.id).map((p) => `<option value="${p.id}">${h(p.name)}${p.hasModels ? ` (${modelsOf(p).filter(pickable).length} models)` : p.sku ? ` (${h(p.sku)})` : ''}</option>`).join('')}</optgroup>`).join('');
   box.innerHTML = PF.lines.map((l, i) => {
     const p = find('products', l.productId);
+    const top = l.groupId ? find('products', l.groupId) : p && p.parentId ? find('products', p.parentId) : p;
+    const models = top && top.hasModels ? modelsOf(top).filter(pickable).sort(byName) : null;
     const ser = p && p.serialized && PF.mode !== 'po';
     return `<div class="card" style="box-shadow:none;background:var(--surface-2)"><div class="card-body form-grid cols-4">
-      <div class="field span-2"><label>Product ${i + 1}</label><select class="select" data-pl="${l.key}" data-f="productId"><option value="">${prods.length ? 'Select product…' : 'No products yet — add them in Products first'}</option>${groups}</select></div>
+      <div class="field ${models ? '' : 'span-2'}"><label>Product ${i + 1}</label><select class="select" data-pl="${l.key}" data-f="top"><option value="">${prods.length ? 'Select product…' : 'No products yet — add them in Products first'}</option>${groups}</select></div>
+      ${models ? `<div class="field"><label>Model <span class="req"></span></label><select class="select" data-pl="${l.key}" data-f="productId"><option value="">Choose the model…</option>${models.map((m) => `<option value="${m.id}">${h(m.variant || m.name)}${m.sku ? ` (${h(m.sku)})` : ''}</option>`).join('')}</select></div>` : ''}
       ${field('Quantity', `<input class="input" data-pl="${l.key}" data-f="qty" inputmode="numeric" value="${l.qty}">`)}
       ${field('Unit cost', `<input class="input" data-pl="${l.key}" data-f="cost" inputmode="decimal" value="${l.cost}" placeholder="${p ? p.cost : ''}">`)}
       ${p && p.serialized ? field('Condition', `<select class="select" data-pl="${l.key}" data-f="condition">${opts(Object.entries(CONDITIONS).slice(0, 3), l.condition)}</select>`) : ''}
@@ -396,11 +400,21 @@ function pfDraw() {
       <div class="field" style="justify-content:flex-end"><button type="button" class="btn btn-sm btn-ghost danger-text" data-action="pf-rm" data-key="${l.key}" ${PF.lines.length === 1 ? 'disabled' : ''}>${icon('trash', 'ic-sm')} Remove</button></div>
     </div></div>`;
   }).join('');
-  PF.lines.forEach((l) => { const s = box.querySelector(`select[data-pl="${l.key}"][data-f="productId"]`); s.value = l.productId; });
+  PF.lines.forEach((l) => {
+    const p = find('products', l.productId);
+    box.querySelector(`select[data-pl="${l.key}"][data-f="top"]`).value = l.groupId || (p && p.parentId) || l.productId || '';
+    const ms = box.querySelector(`select[data-pl="${l.key}"][data-f="productId"]`); if (ms) ms.value = l.productId || '';
+  });
   $$('[data-pl]', box).forEach((inp) => {
     const ev = inp.tagName === 'SELECT' ? 'change' : 'input';
     inp.addEventListener(ev, () => {
       const l = PF.lines.find((x) => x.key === inp.dataset.pl);
+      if (inp.dataset.f === 'top') { // a product with models waits for the model box
+        const t = find('products', inp.value);
+        l.groupId = t && t.hasModels ? t.id : ''; l.productId = t && !t.hasModels ? t.id : '';
+        if (t && !t.hasModels) { l.cost = t.cost; l.condition = t.condition; } else l.cost = '';
+        pfDraw(); if (l.groupId) { const ms = box.querySelector(`select[data-pl="${l.key}"][data-f="productId"]`); ms && ms.focus(); } return;
+      }
       l[inp.dataset.f] = inp.value;
       if (inp.dataset.f === 'productId') { const p = find('products', inp.value); if (p) { l.cost = p.cost; l.condition = p.condition; } pfDraw(); return; }
       if (inp.dataset.f === 'qty') { pfTotals(); pfValidate(l); const lab = inp.closest('.card-body').querySelector('textarea')?.closest('.field').querySelector('label'); if (lab) lab.textContent = lab.textContent.replace(/\(\d*\)/, `(${l.qty})`); return; }
@@ -441,6 +455,8 @@ PAGES.purchases.mount = ({ id }) => {
   if (id !== 'new' || !PF) return;
   pfDraw();
   bindForm($('#pf'), async (d) => {
+    const noModel = PF.lines.find((l) => l.groupId && !l.productId);
+    if (noModel) throw new AppError(`Choose the model for ${find('products', noModel.groupId).name}.`);
     const items = PF.lines.filter((l) => l.productId).map((l) => { const p = find('products', l.productId); return { productId: l.productId, qty: Number(l.qty), cost: l.cost === '' ? p.cost : Number(l.cost), condition: l.condition || p.condition, units: p.serialized ? parseUnits(p, l.imeis) : undefined }; });
     const rec = await svc.savePurchase({ id: PF.po ? PF.po.id : undefined, supplierId: d.supplierId, supplierInvoice: d.supplierInvoice, date: d.date, expected: d.expected, note: d.note, status: PF.mode === 'po' ? 'ordered' : 'received', items, paid: Number(d.paid) || 0, method: d.method });
     toast(PF.mode === 'po' ? `Purchase order ${rec.no} created.` : `${rec.no} received — ${sum(rec.items, (i) => i.qty)} unit(s) added to stock.`);
