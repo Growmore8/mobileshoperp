@@ -349,6 +349,14 @@
     <li><b>Payment to supplier:</b> enter the amount paid now and the method. Leave 0 to record the full amount as payable.</li>
     <li>Click <span class="ui">Receive into stock</span>. The phones are now in stock and ready to sell.</li>
   </ol>
+  <h2>Scan to receive</h2>
+  <p>The <b>scan box</b> at the top of <i>Items</i> accepts anything you scan with a USB or Bluetooth barcode scanner:</p>
+  <ul>
+    <li><b>A product barcode or SKU</b> (back covers, chargers…): the product's line appears with quantity 1, and <b>each further scan adds 1</b>. All pieces of one model carry the same barcode, so 20 covers = 20 scans, or scan once and type 20.</li>
+    <li><b>Phones and laptops:</b> scan the box barcode once to pick the product, then scan each <b>IMEI</b> or <b>serial number</b>. Each scan adds one unit to that line. For dual-SIM phones tick <i>Dual-SIM phones: 2 IMEIs per box</i> and scan IMEI 1 then IMEI 2.</li>
+    <li>Wrong codes beep and say why: unknown code, not a valid IMEI, already scanned in this receipt, or already registered.</li>
+    <li>Items without any barcode: choose the product in the line below and type the quantity.</li>
+  </ul>
   <h2>Bulk IMEI scanning</h2>
   <p>Bulk scanning is the fastest way to receive a box of phones of one model. It opens from <span class="ui">Bulk scan IMEIs</span>, and the same scanner is used in the POS and for stock checks.</p>
   <ul>

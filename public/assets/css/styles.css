@@ -853,3 +853,5 @@ body.sheet-open { overflow: hidden; }
 .model-count { cursor: pointer; border: 0; font: inherit; font-size: 11.5px; }
 .model-tr td { padding-top: 6px !important; padding-bottom: 6px !important; font-size: 13px; background: var(--surface-2); }
 .model-tr .cell-main { font-size: 13px; font-weight: 500; }
+.pf-scanbar { display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid var(--border); }
+.pf-scanbar .input { height: 46px; }

@@ -376,7 +376,13 @@ function purchaseForm(query) {
       ${field(mode === 'po' ? 'Expected delivery' : 'Supplier invoice no.', mode === 'po' ? `<input class="input" type="date" name="expected" value="${isoDate(addDays(new Date(), 3))}">` : `<input class="input" name="supplierInvoice" placeholder="e.g. MMD-55120">`)}
       ${field(mode === 'po' ? 'Order date' : 'Received date', `<input class="input" type="date" name="date" value="${todayISO()}" max="${todayISO()}">`)}
     </div></div>
-    <div class="card"><div class="card-head"><div><h3>Items</h3><div class="sub">For IMEI products enter one number per line. Dual-SIM: <span class="mono">IMEI1, IMEI2</span></div></div><button type="button" class="btn btn-sm" data-action="pf-add">${icon('plus', 'ic-sm')} Add line</button></div><div class="card-body stack" id="pf-lines"></div>
+    <div class="card"><div class="card-head"><div><h3>Items</h3><div class="sub">Scan, or choose the product. For IMEI products enter one number per line. Dual-SIM: <span class="mono">IMEI1, IMEI2</span></div></div><button type="button" class="btn btn-sm" data-action="pf-add">${icon('plus', 'ic-sm')} Add line</button></div>
+      <div class="card-body pf-scanbar">
+        <div class="input-icon">${icon('scan')}<input class="input" id="pf-scan" placeholder="${mode === 'po' ? 'Scan a product barcode or SKU…' : 'Scan a product barcode, SKU, IMEI or serial number…'}" autocomplete="off" aria-label="Scan"></div>
+        ${mode === 'po' ? '' : '<label class="check xs"><input type="checkbox" id="pf-dual"> Dual-SIM phones: 2 IMEIs per box</label>'}
+        <div class="xs muted" id="pf-scan-msg">${mode === 'po' ? 'Each scan of a box barcode adds 1 of that product.' : 'Scan the box barcode to pick the product; each further scan adds 1. For phones and laptops, scan the box barcode once, then each IMEI / serial number.'}</div>
+      </div>
+      <div class="card-body stack" id="pf-lines"></div>
       <div class="card-foot" style="justify-content:space-between"><span class="muted">Total units: <b id="pf-units">0</b></span><span class="bold" style="font-size:17px">Total: <span id="pf-total">${money(0)}</span></span></div></div>
     ${mode !== 'po' ? `<div class="card"><div class="card-head"><h3>Payment to supplier</h3></div><div class="card-body form-grid cols-4">
       ${field('Amount paid now', '<input class="input" name="paid" inputmode="decimal" placeholder="0" id="pf-paid">', { hint: 'Leave 0 to record the full amount as payable' })}
@@ -415,6 +421,7 @@ function pfDraw() {
     const ev = inp.tagName === 'SELECT' ? 'change' : 'input';
     inp.addEventListener(ev, () => {
       const l = PF.lines.find((x) => x.key === inp.dataset.pl);
+      PF.active = l.key;
       if (inp.dataset.f === 'top') { // a product with models waits for the model box
         const t = find('products', inp.value);
         l.groupId = t && t.hasModels ? t.id : ''; l.productId = t && !t.hasModels ? t.id : '';
@@ -429,6 +436,41 @@ function pfDraw() {
   });
   PF.lines.forEach(pfValidate);
   pfTotals();
+}
+/* One scan box for receiving: a product barcode / SKU / code picks that product (+1 for quantity items);
+   for phones and laptops each following IMEI / serial is added to that product's line. */
+function pfScan(raw) {
+  const code = String(raw || '').trim(); if (!code) return;
+  const say = (text, ok) => { const el = $('#pf-scan-msg'); if (el) el.innerHTML = `<span class="${ok ? 'success-text' : 'danger-text'}">${h(text)}</span>`; beep(ok); };
+  const lc = code.toLowerCase();
+  const p = db.products.find((x) => pickable(x) && (x.barcode === code || (x.sku || '').toLowerCase() === lc || (x.code || '').toLowerCase() === lc));
+  if (p) {
+    const units = p.serialized && PF.mode !== 'po';
+    let l = PF.lines.find((x) => x.productId === p.id);
+    if (!l) {
+      l = PF.lines.find((x) => !x.productId && !x.groupId);
+      if (!l) { l = { key: uid('l') }; PF.lines.push(l); }
+      Object.assign(l, { productId: p.id, groupId: p.parentId || '', qty: 0, cost: p.cost, condition: p.condition, imeis: '' });
+    }
+    if (!units) l.qty = (Number(l.qty) || 0) + 1;
+    PF.active = l.key; pfDraw();
+    return say(units ? `${p.name} — now scan each ${p.idType === 'imei' ? 'IMEI' : 'serial number'}.` : `${p.name} — quantity ${l.qty}.`, true);
+  }
+  if (PF.mode === 'po') return say(`No product has the barcode or SKU “${code}”.`, false);
+  const dev = findDeviceByCode(code);
+  if (dev) return say(`${code} is already registered (${productName(dev.productId)}). Duplicate IMEI / serial numbers are blocked.`, false);
+  const serialLine = (x) => { const pp = x && find('products', x.productId); return pp && pp.serialized ? pp : null; };
+  const l = serialLine(PF.lines.find((x) => x.key === PF.active)) ? PF.lines.find((x) => x.key === PF.active) : [...PF.lines].reverse().find(serialLine);
+  const lp = serialLine(l);
+  if (!lp) return say(`Unknown code “${code}”. Scan the product's box barcode first, or choose the product below.`, false);
+  if (lp.idType === 'imei' && !validImei(code)) return say(`“${code}” is not a product barcode, and not a valid 15-digit IMEI for ${lp.name}.`, false);
+  const taken = PF.lines.flatMap((x) => { const pp = serialLine(x); return pp ? parseUnits(pp, x.imeis).flatMap((u) => [u.imei1, u.imei2, u.serial].filter(Boolean)) : []; }).map(normId);
+  if (taken.includes(normId(code))) return say(`${code} is already scanned in this receipt.`, false);
+  const rows = String(l.imeis || '').split(/\n+/).map((s) => s.trim()).filter(Boolean);
+  const dual = lp.idType === 'imei' && $('#pf-dual') && $('#pf-dual').checked;
+  if (dual && rows.length && !rows[rows.length - 1].includes(',')) rows[rows.length - 1] += ', ' + code; else rows.push(code);
+  l.imeis = rows.join('\n'); l.qty = rows.length; PF.active = l.key; pfDraw();
+  say(`${lp.name}: ${rows.length} unit${rows.length === 1 ? '' : 's'} scanned${dual && !rows[rows.length - 1].includes(',') ? ' — now scan IMEI 2' : ''}.`, true);
 }
 function parseUnits(p, text) {
   return String(text || '').split(/\n+/).map((s) => s.trim()).filter(Boolean).map((line) => {
@@ -460,6 +502,9 @@ function pfTotals() {
 PAGES.purchases.mount = ({ id }) => {
   if (id !== 'new' || !PF) return;
   pfDraw();
+  const scan = $('#pf-scan');
+  scan.addEventListener('keydown', (e) => { if (e.key !== 'Enter') return; e.preventDefault(); pfScan(scan.value); scan.value = ''; scan.focus(); });
+  if (window.matchMedia('(min-width: 1025px)').matches) scan.focus();
   bindForm($('#pf'), async (d) => {
     const noModel = PF.lines.find((l) => l.groupId && !l.productId);
     if (noModel) throw new AppError(`Choose the model for ${find('products', noModel.groupId).name}.`);
