@@ -72,7 +72,7 @@ function openProductForm(p) {
       <div class="form-section">Models</div>
       <div class="span-all" style="grid-column:1/-1">${canModels
         ? `<label class="check" ${p.hasModels ? 'hidden' : ''}><input type="checkbox" id="pf-use-models" ${useModels ? 'checked' : ''}> This product comes in several models <span class="muted">(e.g. back covers for iPhone 11, iPhone 12, 15 Pro Max…)</span></label>
-           <div id="pf-models" ${useModels ? '' : 'hidden'}><p class="hint" style="margin:6px 0 10px">Each model has its own price and stock. Staff choose the model when receiving stock and at the POS. Leave Code blank to number it automatically (${h(p.code || 'P-1001')}-01, -02…).</p><div class="pf-models-wrap"><table class="table pf-models"><thead><tr><th>Model <span class="req"></span></th><th>Code</th><th>SKU</th><th>Barcode</th>${cost ? '<th class="num">Cost</th>' : ''}<th class="num">Price <span class="req"></span></th><th class="num">Min</th><th class="num">Stock</th><th></th></tr></thead><tbody id="pf-mrows"></tbody></table></div><button type="button" class="btn btn-sm" id="pf-madd" style="margin-top:8px">${icon('plus', 'ic-sm')} Add model</button></div>`
+           <div id="pf-models" ${useModels ? '' : 'hidden'}><p class="hint" style="margin:6px 0 10px">Each model has its own price and stock. Staff choose the model when receiving stock and at the POS. Leave Code blank to number it automatically (${h(p.code || 'P-1001')}-01, -02…).</p><div class="pf-models-wrap"><table class="table pf-models"><thead><tr><th>Model / variant <span class="req"></span></th><th>Code</th><th>SKU</th><th>Barcode</th>${cost ? '<th class="num">Cost</th>' : ''}<th class="num">Price <span class="req"></span></th><th class="num">Min</th><th class="num">Stock</th><th></th></tr></thead><tbody id="pf-mrows"></tbody></table></div><button type="button" class="btn btn-sm" id="pf-madd" style="margin-top:8px">${icon('plus', 'ic-sm')} Add model</button></div>`
         : `<p class="hint">This product already has its own stock, so models can't be added to it. To sell it in several models, create a new product and tick “This product comes in several models”.</p>`}</div>
       <div class="form-section pf-single">Pricing & tax</div>
       ${cost ? field('Cost price', `<input class="input" name="cost" inputmode="decimal" required value="${p.cost ?? ''}">`, { req: true, cls: 'pf-single' }) : `<input type="hidden" name="cost" value="${p.cost ?? 0}">`}
@@ -101,9 +101,9 @@ function openProductForm(p) {
       const drawModels = () => {
         if (!mbox) return;
         mbox.innerHTML = MODELS.map((x) => `<tr data-key="${x.key}">
-          <td><input class="input input-sm" data-mf="variant" value="${h(x.variant)}" placeholder="iPhone 11" aria-label="Model"></td>
+          <td><input class="input input-sm" data-mf="variant" value="${h(x.variant)}" placeholder="${['phone', 'watch'].includes(catKind(f.categoryId.value)) ? 'e.g. 128GB Black' : 'e.g. iPhone 11'}" aria-label="Model"></td>
           <td><input class="input input-sm mono" data-mf="code" value="${h(x.code)}" placeholder="Auto" aria-label="Code"></td>
-          <td><input class="input input-sm mono" data-mf="sku" value="${h(x.sku)}" placeholder="e.g. BC-IP11" aria-label="SKU"></td>
+          <td><input class="input input-sm mono" data-mf="sku" value="${h(x.sku)}" placeholder="optional" aria-label="SKU"></td>
           <td><input class="input input-sm mono" data-mf="barcode" value="${h(x.barcode)}" inputmode="numeric" aria-label="Barcode"></td>
           ${cost ? `<td><input class="input input-sm num" data-mf="cost" value="${h(x.cost)}" inputmode="decimal" aria-label="Cost"></td>` : ''}
           <td><input class="input input-sm num" data-mf="price" value="${h(x.price)}" inputmode="decimal" aria-label="Price"></td>
@@ -132,6 +132,7 @@ function openProductForm(p) {
           MODELS.splice(MODELS.indexOf(x), 1); drawModels();
         });
       }
+      f.categoryId.addEventListener('change', () => drawModels()); // example hints follow the category
       f.categoryId.addEventListener('change', () => { if (isNew) { const c = db.categories.find((x) => x.id === f.categoryId.value); if (c) f.warrantyMonths.value = c.warrantyMonths; if (c && c.kind === 'phone') f.idType.value = 'imei'; } });
       $('#pf-file', el).addEventListener('change', async (e) => { try { image = await readImage(e.target.files[0], 400); $('#pf-img', el).innerHTML = `<img src="${image}" alt="">`; } catch (err) { handleError(err); } });
       const rm = $('#pf-rm', el); rm && rm.addEventListener('click', () => { image = ''; $('#pf-img', el).innerHTML = isNew ? icon('camera') : productArt(p); });
