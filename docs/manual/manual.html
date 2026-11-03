@@ -315,6 +315,24 @@
     <tr><td>Smartwatches &amp; Wearables</td><td>12 months</td><td>Audio</td><td>6 months</td></tr>
     <tr><td>Chargers &amp; Cables</td><td>6 months</td><td>Cases &amp; Protection / Spare Parts</td><td>none</td></tr>
   </table>
+  <h2>Products with several models (back covers, screen guards…)</h2>
+  <p>Some items come in many models: back covers for iPhone 11, iPhone 12, 15 Pro Max and so on. Each model has a different price and its own stock. Create <b>one product</b> with a list of models, instead of a separate product for each one.</p>
+  <ol class="steps">
+    <li>Click <span class="ui">New product</span> and enter the name (for example <i>Back covers</i>), the category and the brand.</li>
+    <li>Under <b>Models</b>, tick <span class="ui">This product comes in several models</span>.</li>
+    <li>Enter each model with its <b>cost</b> and <b>price</b>, and optionally its barcode. Click <span class="ui">Add model</span> for more rows. Leave <b>Code</b> blank to number the models automatically, for example P-1001-01, P-1001-02.</li>
+    <li>Save. The product list shows <i>Back covers · 3 models</i> with each model underneath. The price shows the lowest model price ("from Rs. 1,390") and the stock shows the total of all models.</li>
+  </ol>
+  <figure><img src="img/27-product-models.jpg"><figcaption>One product with its models: each model has its own cost, price and stock</figcaption></figure>
+  <ul>
+    <li><b>Receiving stock:</b> the product list shows each model separately, for example <i>Back covers – iPhone 12</i>. Choose the model you received.</li>
+    <li><b>Selling:</b> in the POS, tap <i>Back covers</i>, then choose the model. Models that are out of stock are greyed out. Searching for <i>iPhone 12</i> also shows the matching models directly, and a model's barcode adds it straight to the cart.</li>
+    <li>Invoices, reports and stock lists show the full name, such as <i>Back covers – iPhone 12</i>.</li>
+    <li>To change a price or add a new model later, click <span class="ui">Edit</span> on the product or on any of its models. Renaming the product renames all its models.</li>
+    <li>A model with sales or stock history is deactivated, not deleted, when you remove it.</li>
+    <li>A product that already has its own stock can't be given models. Create a new product with models instead, and deactivate the old one when its stock is sold.</li>
+  </ul>
+  <figure><img src="img/28-pos-choose-model.jpg" style="max-width:62%"><figcaption>POS: choosing the model after tapping the product</figcaption></figure>
   <div class="callout rule"><b>Tracking type is fixed once stock exists</b>After a product has stock history, its tracking type (IMEI / serial / quantity) cannot change. A product with history cannot be deleted either; it is <b>deactivated</b> so old invoices stay correct.</div>
 </section>
 
@@ -326,7 +344,7 @@
   <h2>Receive stock (goods received)</h2>
   <ol class="steps">
     <li>Click <span class="ui">Receive stock</span>. Choose the <b>Supplier</b>, then type the supplier's invoice number and the received date.</li>
-    <li>For each model, choose the <b>Product</b> and enter the <b>Quantity</b>, <b>Unit cost</b> and, for phones, the <b>Condition</b>. Use <span class="ui">Add line</span> for more models.</li>
+    <li>For each model, choose the <b>Product</b> and enter the <b>Quantity</b>, <b>Unit cost</b> and, for phones, the <b>Condition</b>. Use <span class="ui">Add line</span> for more models. For a product with several models, such as back covers, choose the exact model, for example <i>Back covers – iPhone 12</i>.</li>
     <li>For phones, enter the <b>IMEI numbers</b>, one per line. For dual-SIM phones type <i>IMEI1, IMEI2</i>. Or use <span class="ui">Bulk scan IMEIs</span> (below). The system checks each number as you go: <i>"✓ All numbers valid"</i>, invalid numbers, duplicates, or IMEIs already registered.</li>
     <li><b>Payment to supplier:</b> enter the amount paid now and the method. Leave 0 to record the full amount as payable.</li>
     <li>Click <span class="ui">Receive into stock</span>. The phones are now in stock and ready to sell.</li>
