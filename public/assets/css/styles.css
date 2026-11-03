@@ -849,3 +849,7 @@ body.sheet-open { overflow: hidden; }
 .pm-row { width: 100%; background: none; border: 0; border-bottom: 1px solid var(--border); cursor: pointer; color: inherit; font: inherit; }
 .pm-row:hover:not([disabled]) { background: var(--surface-2); }
 .pm-row[disabled] { opacity: .55; cursor: not-allowed; }
+.model-toggle { width: 28px; height: 28px; padding: 0; flex-shrink: 0; margin-left: -6px; }
+.model-count { cursor: pointer; border: 0; font: inherit; font-size: 11.5px; }
+.model-tr td { padding-top: 6px !important; padding-bottom: 6px !important; font-size: 13px; background: var(--surface-2); }
+.model-tr .cell-main { font-size: 13px; font-weight: 500; }

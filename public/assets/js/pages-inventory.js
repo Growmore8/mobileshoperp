@@ -12,8 +12,8 @@ PAGES.products = {
     return pageHead('Products & Categories', 'Phones, accessories, wearables and spare parts. Serialised items are tracked per IMEI / serial number.',
       `${can('products', 'export') ? `<button class="btn" data-action="prod-export">${icon('download')} Export</button>` : ''}${can('products', 'create') ? `<button class="btn btn-primary" data-action="prod-new">${icon('plus')} New product</button>` : ''}`) +
       `<div class="card">${dataTable('products', {
-        rows: productRows, q: query.q || '',
-        countLabel: (rows) => { const n = rows.filter((p) => !p.parentId).length, m = rows.length - n; return `${n} product${n === 1 ? '' : 's'}${m ? ` · ${m} model${m === 1 ? '' : 's'}` : ''}`; }, placeholder: 'Search name, model, SKU, barcode, brand…',
+        rows: productRows, q: query.q || '', rowClass: (p) => (p.parentId ? 'model-tr' : ''),
+        countLabel: (rows) => { const tops = rows.filter((p) => !p.parentId), n = tops.length, m = sum(tops, (p) => (p.hasModels ? modelsOf(p).filter((x) => x.active).length : 0)); return `${n} product${n === 1 ? '' : 's'}${m ? ` · ${m} model${m === 1 ? '' : 's'}` : ''}`; }, placeholder: 'Search name, model, SKU, barcode, brand…',
         searchText: (p) => [p.name, p.code, p.sku, p.barcode, p.brand, p.model, p.color, ...(p.hasModels ? modelsOf(p).map((x) => `${x.variant} ${x.code} ${x.sku || ''} ${x.barcode || ''}`) : [])].join(' '),
         filters: [
           { key: 'cat', label: 'All categories', options: db.categories.map((c) => [c.id, c.name]), fn: (p, v) => p.categoryId === v },
@@ -23,7 +23,7 @@ PAGES.products = {
         columns: [
           { label: 'Product', cls: 'td-main', sort: (p) => p.name, render: (p) => (p.parentId
             ? `<div class="flex model-row"><span class="model-branch" aria-hidden="true">↳</span><div style="min-width:0"><div class="cell-main">${h(p.variant || p.name)}${p.active ? '' : ' ' + badge('Inactive', 'gray')}</div><div class="cell-sub mono">${h(p.code)}${p.sku ? ' · ' + h(p.sku) : ''}</div></div></div>`
-            : `<div class="flex">${thumb(p)}<div style="min-width:0"><div class="cell-main">${h(p.name)}${p.hasModels ? ' ' + badge(`${modelsOf(p).filter((x) => x.active).length} models`, 'blue', 'no-dot') : ''}${p.active ? '' : ' ' + badge('Inactive', 'gray')}</div><div class="cell-sub mono">${h(p.code)}${p.sku ? ' · ' + h(p.sku) : ''}</div></div></div>`), csv: (p) => p.name },
+            : `<div class="flex">${p.hasModels ? `<button class="btn btn-xs btn-ghost model-toggle" data-action="prod-toggle" data-id="${p.id}" aria-expanded="${PROD_OPEN.has(p.id)}" aria-label="Show or hide models">${icon(PROD_OPEN.has(p.id) ? 'chevronDown' : 'chevronRight', 'ic-sm')}</button>` : ''}${thumb(p)}<div style="min-width:0"><div class="cell-main">${h(p.name)}${p.hasModels ? ` <button class="badge badge-blue no-dot model-count" data-action="prod-toggle" data-id="${p.id}">${modelsOf(p).filter((x) => x.active).length} models</button>` : ''}${p.active ? '' : ' ' + badge('Inactive', 'gray')}</div><div class="cell-sub mono">${h(p.code)}${p.sku ? ' · ' + h(p.sku) : ''}</div></div></div>`), csv: (p) => p.name },
           { label: 'Category', render: (p) => h(catName(p.categoryId)), csv: (p) => catName(p.categoryId) },
           { label: 'Brand', sort: (p) => p.brand, render: (p) => h(p.brand), csv: (p) => p.brand },
           { label: 'Tracking', render: (p) => badge(trackLabel(p), p.serialized ? 'purple' : 'gray', 'no-dot'), csv: trackLabel },
@@ -31,15 +31,17 @@ PAGES.products = {
           { label: 'Price', cls: 'num', sort: (p) => p.price, render: (p) => (p.hasModels ? '' : `<b>${money(p.price)}</b>`), csv: (p) => p.price },
           { label: 'Stock', cls: 'num', sort: stockOf, render: (p) => `${stockOf(p)} ${stockState(p) !== 'ok' ? sbadge('stock', stockState(p)) : ''}`, csv: stockOf },
           { label: 'Warranty', render: (p) => (p.warrantyMonths ? `${p.warrantyMonths}m <span class="xs muted">${h(p.warrantyProvider)}</span>` : p.repairWarrantyDays ? `<span class="xs">${p.repairWarrantyDays}d repair</span>` : '<span class="muted">—</span>'), csv: (p) => p.warrantyMonths },
-          { label: '', cls: 'actions', render: (p) => (can('products', 'edit') ? `<button class="btn btn-xs" data-action="prod-edit" data-id="${p.parentId || p.id}">${icon('edit', 'ic-sm')} Edit</button>` : '') },
+          { label: '', cls: 'actions', render: (p) => (can('products', 'edit') && !p.parentId ? `<button class="btn btn-xs" data-action="prod-edit" data-id="${p.id}">${icon('edit', 'ic-sm')} Edit</button>` : '') },
         ],
       })}</div>`;
   },
 };
-/* Products A–Z, each product with models followed by its models */
+/* Products A–Z; a product's models show under it when opened (▸), or when a search is typed so matching models can be found */
+const PROD_OPEN = new Set();
 function productRows() {
   const out = [];
-  db.products.filter((p) => !p.parentId).sort(byName).forEach((p) => { out.push(p); if (p.hasModels) out.push(...modelsOf(p).sort(byName)); });
+  const searching = !!(DT.products && DT.products.q);
+  db.products.filter((p) => !p.parentId).sort(byName).forEach((p) => { out.push(p); if (p.hasModels && (searching || PROD_OPEN.has(p.id))) out.push(...modelsOf(p).sort(byName)); });
   return out.concat(db.products.filter((p) => p.parentId && !find('products', p.parentId)));
 }
 function openProductForm(p) {
@@ -153,6 +155,7 @@ function openProductForm(p) {
   });
 }
 Object.assign(ACT, {
+  'prod-toggle': (el) => { const id = el.dataset.id; PROD_OPEN.has(id) ? PROD_OPEN.delete(id) : PROD_OPEN.add(id); dtRefresh('products'); },
   'prod-new': () => openProductForm(null),
   'prod-edit': (el) => openProductForm(find('products', el.dataset.id)),
   'prod-export': () => { need('products', 'export'); dtExport('products', `products-${todayISO()}`); },
