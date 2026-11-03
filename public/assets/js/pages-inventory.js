@@ -12,7 +12,8 @@ PAGES.products = {
     return pageHead('Products & Categories', 'Phones, accessories, wearables and spare parts. Serialised items are tracked per IMEI / serial number.',
       `${can('products', 'export') ? `<button class="btn" data-action="prod-export">${icon('download')} Export</button>` : ''}${can('products', 'create') ? `<button class="btn btn-primary" data-action="prod-new">${icon('plus')} New product</button>` : ''}`) +
       `<div class="card">${dataTable('products', {
-        rows: productRows, q: query.q || '', placeholder: 'Search name, model, SKU, barcode, brand…',
+        rows: productRows, q: query.q || '',
+        countLabel: (rows) => { const n = rows.filter((p) => !p.parentId).length, m = rows.length - n; return `${n} product${n === 1 ? '' : 's'}${m ? ` · ${m} model${m === 1 ? '' : 's'}` : ''}`; }, placeholder: 'Search name, model, SKU, barcode, brand…',
         searchText: (p) => [p.name, p.code, p.sku, p.barcode, p.brand, p.model, p.color, ...(p.hasModels ? modelsOf(p).map((x) => `${x.variant} ${x.code} ${x.sku || ''} ${x.barcode || ''}`) : [])].join(' '),
         filters: [
           { key: 'cat', label: 'All categories', options: db.categories.map((c) => [c.id, c.name]), fn: (p, v) => p.categoryId === v },
