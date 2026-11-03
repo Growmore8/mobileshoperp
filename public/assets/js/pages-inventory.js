@@ -27,8 +27,8 @@ PAGES.products = {
           { label: 'Category', render: (p) => h(catName(p.categoryId)), csv: (p) => catName(p.categoryId) },
           { label: 'Brand', sort: (p) => p.brand, render: (p) => h(p.brand), csv: (p) => p.brand },
           { label: 'Tracking', render: (p) => badge(trackLabel(p), p.serialized ? 'purple' : 'gray', 'no-dot'), csv: trackLabel },
-          ...(cost ? [{ label: 'Cost', cls: 'num', sort: (p) => p.cost, render: (p) => money(p.cost), csv: (p) => p.cost }] : []),
-          { label: 'Price', cls: 'num', sort: (p) => p.price, render: (p) => `${p.hasModels ? '<span class="xs muted">from</span> ' : ''}<b>${money(p.price)}</b>`, csv: (p) => p.price },
+          ...(cost ? [{ label: 'Cost', cls: 'num', sort: (p) => p.cost, render: (p) => (p.hasModels ? modelRange(p, 'cost') : money(p.cost)), csv: (p) => p.cost }] : []),
+          { label: 'Price', cls: 'num', sort: (p) => p.price, render: (p) => (p.hasModels ? modelRange(p, 'price') : `<b>${money(p.price)}</b>`), csv: (p) => p.price },
           { label: 'Stock', cls: 'num', sort: stockOf, render: (p) => `${stockOf(p)} ${stockState(p) !== 'ok' ? sbadge('stock', stockState(p)) : ''}`, csv: stockOf },
           { label: 'Warranty', render: (p) => (p.warrantyMonths ? `${p.warrantyMonths}m <span class="xs muted">${h(p.warrantyProvider)}</span>` : p.repairWarrantyDays ? `<span class="xs">${p.repairWarrantyDays}d repair</span>` : '<span class="muted">—</span>'), csv: (p) => p.warrantyMonths },
           { label: '', cls: 'actions', render: (p) => (can('products', 'edit') ? `<button class="btn btn-xs" data-action="prod-edit" data-id="${p.parentId || p.id}">${icon('edit', 'ic-sm')} Edit</button>` : '') },
@@ -36,6 +36,13 @@ PAGES.products = {
       })}</div>`;
   },
 };
+/* A product with models has no price of its own: show the range of its models' prices, e.g. "Rs. 1,250 – 1,500" */
+function modelRange(p, key) {
+  const v = modelsOf(p).filter((x) => x.active).map((x) => x[key] || 0);
+  if (!v.length) return '<span class="muted">—</span>';
+  const lo = Math.min(...v), hi = Math.max(...v);
+  return `<span class="muted">${lo === hi ? money(lo) : `${money(lo)} – ${money(hi, { noSymbol: true })}`}</span>`;
+}
 /* Products A–Z, each product with models followed by its models */
 function productRows() {
   const out = [];
